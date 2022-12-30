@@ -141,11 +141,15 @@ class Parametrization(Parametrization):
     tab_2.section_3.button = SetParamsButton('Calc skew load factor', 'skew_load_factor', longpoll=True,visible=Lookup("ans_SKL_analysis"))
     tab_2.section_3.lb2=LineBreak()
 
-    tab_2.section_3.skl1=NumberField("Skew load factor 1",visible=Lookup("ans_SKL_analysis"),suffix="-")
-    tab_2.section_3.skl2=NumberField("Skew load factor 2",visible=Lookup("ans_SKL_analysis"),suffix="-")
+    tab_2.section_3.skl1=NumberField("Skew load factor 1",visible=Lookup("ans_SKL_analysis"),
+                                    suffix="-",default=1)
+    tab_2.section_3.skl2=NumberField("Skew load factor 2",visible=Lookup("ans_SKL_analysis"),
+                                    suffix="-",default=1)
     tab_2.section_3.lb3=LineBreak()
-    tab_2.section_3.skl3=NumberField("Skew load factor 3",visible=Lookup("ans_SKL_analysis"),suffix="-")
-    tab_2.section_3.skl4=NumberField("Skew load factor 4",visible=Lookup("ans_SKL_analysis"),suffix="-")
+    tab_2.section_3.skl3=NumberField("Skew load factor 3",visible=Lookup("ans_SKL_analysis"),
+                                    suffix="-",default=1)
+    tab_2.section_3.skl4=NumberField("Skew load factor 4",visible=Lookup("ans_SKL_analysis"),
+                                    suffix="-",default=1)
     tab_2.section_3.lb4=LineBreak()
     tab_2.section_3.min_pitch=NumberField("Min pitch angle",visible=Lookup("ans_SKL_analysis"),suffix="deg")
     tab_2.section_3.max_pitch=NumberField("Max pitch angle",visible=Lookup("ans_SKL_analysis"),suffix="deg")

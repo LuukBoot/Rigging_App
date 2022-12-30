@@ -20,9 +20,6 @@ class Main_Controller(ViktorController):
         Data_skl = data.get_data_SKL
         Data_general = data.get_data_general
 
-
-        
-
         result= Calc_SKL(Data_skl,Data_general)
         max_skew_load_factor=result.get_max_skew_load_factor
         pitch_roll_angles=result.get_max_min_pitch_roll_angles
