@@ -1,9 +1,9 @@
 
 from .calculations import Calc_COG_env, \
     Calc_load_dis,Calc_factors,Calc_rigging,Calc_SKL
+from .Default_inputs import df_rigging
 
-
-class communicater_calculations:
+class communicater_calculations: 
     def __init__(self,params,**kwargs):
         # Getting the params:
         self.point_names=["A","B","C","D"]
@@ -14,6 +14,12 @@ class communicater_calculations:
         general_params= params.tab_1
         general_factor_params =   params.tab_2.section_1
         SSF_params = params.tab_2.section_2
+        #skl_params= params.tab_2.section_3
+        rigging_params= params.tab_3.section_1
+        #other_rigging_params= params.tab_3.section_2
+        #crane_params= params.tab_4
+        #file_params= params.tab_5
+
 
 
         # making tef factor (kan worden verwijdert)
@@ -29,7 +35,7 @@ class communicater_calculations:
                                                 SSF_params)
         self.data_general_factor = self.make_data_general_factor(
                                                 general_factor_params)
-
+        self.data_rigging = self.make_data_rigging(rigging_params)
         #print(self.data_rigging)
         # Print statements kan worden verwijdert
         #print(_Calc_factors)
@@ -56,17 +62,17 @@ class communicater_calculations:
                                     self.data_SSF_factors,
                                     self.N_lifts,
                                     tef_factor)
-
-        
-
-                                    
+        _Calc_rigging = Calc_rigging(self.data_rigging,
+                                     _Calc_factors,
+                                     _Calc_load_dis,
+                                     self.data_general["LW"])
 
         # Making attributes so it can be shared with the other method 
         self.Load_dis_perc = _Calc_load_dis.return_load_dis
         self.Load_dis_t = _Calc_load_dis.get_load_dis_tons
         self.factors = _Calc_factors.get_general_factors
         self.COG_shift = _Calc_load_dis.get_max_cog_shifts
-        print(self.factors)
+        self.Rigging_checks = _Calc_rigging.get_rigging_calc_total
 
     def make_data_skl(self,params):
         Data_SKl ={}
@@ -121,7 +127,92 @@ class communicater_calculations:
     
         return Data_SSF_factor
 
-   
+    def make_data_rigging(self, params):
+        Data_rigging = []
+        id_slings_list = list(df_rigging["Slings"].keys())
+        id_shackles_list = list(df_rigging["Shackles"].keys())
+        
+        dynamic_array = params.Rigging_data
+        for ans in dynamic_array:
+            row = {}
+            row["Name"] = ans["RiggingPoint"]
+            row["Material"]= ans['rigging_material']
+            row["Points"]=ans["Points"]
+            row["RWP"]=ans["RWP"]
+            row["Angle_1"]=ans['transvere_angle']
+            row["Angle_2"]=ans['longitudinal_angle']
+            row["SSF_ans"] = ans["SSF"]
+            # skl array
+            row["SKL"] = ["ans", 0,0]
+            row["SKL"][0] = ans["SKL"]
+            row["SKL"][1]= ans["SKL_value"]
+            row["TRF_ans"] = ans["TRF"]
+            row["SLDF_ans"] = ans["SLDF"]
+            # sling is equal to a array 
+            row["sling"] = ["ID","type", 0, 0, 0]
+            id_sling = ans.Table_sling_grommet[0]['ID_number']
+            row["sling"][0] = str(id_sling)
+            if id_sling not in id_slings_list:
+                # it is not in the data base 
+                print("sling Is niet in data base")
+                row["sling"][1] = ans.Table_sling_grommet[0]['Type']
+                row["sling"][2] = ans.Table_sling_grommet[0]['SWL']
+                row["sling"][3] = ans.Table_sling_grommet[0]['D']
+            else:
+                print("sling is in data base")
+                info_sling = df_rigging["Slings"][id_sling]
+                row["sling"][1] = info_sling["type"]
+                row["sling"][2] = info_sling["MBL"]
+                row["sling"][3] = info_sling["Dia"]
+            row["sling"][4] = ans.Table_sling_grommet[0]['n_parts']
+
+            # Connecting points upper 
+            row ["Connection_upper"] = ["Type",0, 0]
+            type_connec_upper = ans.Table_connecting_points[0]["connections"] 
+            row ["Connection_upper"][0] = type_connec_upper
+            
+            if "Shackle" in type_connec_upper:
+                id_shackle = type_connec_upper.split(" ",1)[1]
+                if id_shackle not in id_shackles_list:
+                    print("Upper Shackle not in data base")
+                    row["Connection_upper"][1] = ans.Table_connecting_points[0]["dia"]
+                    row["Connection_upper"][2] = ans.Table_connecting_points[0]["SWL"] 
+                else: 
+                    print("Upper shackle in data base")
+                    info_shackle = df_rigging["Shackles"][id_shackle] 
+                    if isinstance(info_shackle["D"],str) == True:
+                        row ["Connection_upper"][1]=ans.Table_connecting_points[0]["dia"]
+                    else:
+                        row ["Connection_upper"][1] = info_shackle["D"]
+                    row ["Connection_upper"][2] = info_shackle["WLL"] 
+            else:
+                row ["Connection_upper"][1] = ans.Table_connecting_points[0]["dia"]
+                row ["Connection_upper"][2] = ans.Table_connecting_points[0]["SWL"] 
+
+            # Connecting points lower 
+            row ["Connection_lower"] = ["Type",0, 0]
+            type_connec_upper = ans.Table_connecting_points[1]["connections"] 
+            row ["Connection_lower"][0] = type_connec_upper
+
+            if "Shackle" in type_connec_upper:
+                id_shackle = type_connec_upper.split(" ",1)[1]
+                if id_shackle not in id_shackles_list:
+                    print("Lower Shackle not in data base")
+                    row ["Connection_lower"][1] = ans.Table_connecting_points[1]["dia"]
+                    row ["Connection_lower"][2] = ans.Table_connecting_points[1]["SWL"] 
+                else: 
+                    info_shackle = df_rigging["Shackles"][id_shackle] 
+                    if isinstance(info_shackle["D"],str) == True:
+                        row ["Connection_lower"][1]=ans.Table_connecting_points[1]["dia"]
+                    else:
+                        row ["Connection_lower"][1] = info_shackle["D"]
+                    row ["Connection_lower"][2] = info_shackle["WLL"] 
+                    print("Lower Shackle in data base")
+            else:
+                row ["Connection_lower"][1] = ans.Table_connecting_points[1]["dia"]
+                row ["Connection_lower"][2] = ans.Table_connecting_points[1]["SWL"] 
+            Data_rigging.append(row)
+        return Data_rigging
 
     def make_data_general_factor(self,params):
         Data_general_factor = {}
@@ -276,3 +367,4 @@ class communicater_calculations:
     @property
     def get_rigging_checks(self):
         return self.Rigging_checks
+

@@ -4,6 +4,7 @@ from viktor.views import  PlotlyView, PlotlyResult, DataGroup, \
         SVGAndDataView,SVGAndDataResult,SVGResult,Label,GeometryAndDataView,\
             GeometryAndDataResult,PlotlyAndDataResult
 
+import numpy as np
 from .model import communicater_calculations
 from .parametrization import Parametrization
 from plotly.subplots import make_subplots
@@ -18,7 +19,7 @@ class Main_Controller(ViktorController):
 
         data = communicater_calculations(params)
         # gettin data
-        max_cog_shift = data.get_max_cog_shift
+        max_cog_shift = np.round(data.get_max_cog_shift,3)
         load_dis_perc = data.get_load_dis_perc
         load_dis_t = data.get_load_dis_t
         factors = data.get_factors
@@ -101,3 +102,50 @@ class Main_Controller(ViktorController):
         )
         
         return PlotlyResult(fig.to_json())        
+
+    @DataView("Rigging output",duration_guess=1)
+    def data_rigging(self,params,**kwargs):
+
+        data = communicater_calculations(params)
+       
+        Riggin_checks=data.get_rigging_checks
+
+        print(Riggin_checks)
+        #print(Riggin_results_total)
+        
+
+        data_group_total=[]
+        for rigging_point,results in Riggin_checks.items():
+            group=DataItem(rigging_point," ",subgroup=DataGroup(
+                        DataItem("Type",results["sling"][1],prefix='[-]',explanation_label="Type of sling/grommet"),
+                        DataItem("D",results["sling"][3],prefix='[mm]',explanation_label="Diameter sling/grommet"),
+                        DataItem("SWL",round(results["sling"][2],0),prefix='[t]',explanation_label="SWL sling/grommet"),                   
+                        DataItem("TEF",round(results["TEF"],2),prefix='[-]',explanation_label="Tilt effect factor"),
+                        DataItem("FDRL",round(results["FDRL"],2),prefix='[t]',explanation_label="Factored Dynamic Rigging Load(LW * WCF * DAF * YAW * TEF)"),
+                        DataItem("Perc",round(results["perc"]*100,2),prefix='[%]',explanation_label="Load perc on lifting point"),
+                        DataItem("COG",round(results["COG"],2),prefix='[-]',explanation_label="COG shift factor"),
+                        DataItem("SKL",round(results["SKL"][2],2),prefix='[-]',explanation_label="skew load factor"),
+                        DataItem("VLLP",round(results["VLLP"],2),prefix='[t]',explanation_label="Vertical load to lifting point (Perc * FDRL * COG shift factor * SKL)"),
+                        DataItem("RWP",results["RWP"],prefix='[t]',explanation_label="Rigging weight above lifting point"),
+                        DataItem("VLUS",round(results["VLUS"],2),prefix='[t]',explanation_label="Vertical load on slings (VLLP + (RWP * DAF * WCF)):"),
+                        DataItem("Angle 1",results["Angle_1"],prefix='[deg]',explanation_label="Sling angle with vertical, transverse:"),
+                        DataItem("Angle 2",results["Angle_2"],prefix='[deg]',explanation_label="Sling angle with vertical, longitudinal:"),
+                        DataItem("IFUS",round(results["IFUS"],2),prefix='[t]',explanation_label="inline force slings"),
+                        DataItem("n",results["sling"][4],prefix='[-]',explanation_label="Amount of parts"),
+                        DataItem("SLDF distribution",results["SLDF_dis"],prefix="[-]",explanation_label="SLing load distributie"),
+                        DataItem("SLDF",round(results["SLDF"],2),prefix='[-]',explanation_label="Sling load distributie factor"),
+                        DataItem("IFUP",round(results["IFUP"],2),prefix='[t]',explanation_label="Inline force one part(IFUS/n)*SLDF"),
+                        DataItem("TRF",round(results["TRF"],2),prefix='[-]',explanation_label="Termination factor"),
+                        DataItem("Bending d",results["min_d"],prefix='[mm]',explanation_label="Minimum diameter over wich sling body is bent"),
+                        DataItem("BRF",round(results["BRF"],2),prefix='[-]',explanation_label="bending reduction factor"),
+                        DataItem("Reduction factor",results["Red_factor"],prefix='[-]',explanation_label="Max BRF/TRF"),
+                        DataItem("SSF",results["SSF"],prefix='[-]',explanation_label="Sling safety factor"),
+                        DataItem("Req swl",round(results["sling"][-2],2),prefix='[t]',explanation_label="Required SWL sling/grommet(IFUP*SSF*red factor)"),
+                        DataItem("UC sling/grommet",round(results["sling"][-1],2),prefix='[-]',explanation_label="Unity check sling/grommet"),
+                        DataItem("UC upper shackle",results["Connection_upper"][-1],prefix='[-]',explanation_label="Unity check upper shackle"),
+                        DataItem("UC lower shackle",results["Connection_lower"][-1],prefix='[-]',explanation_label="Unity check lower shackle")))
+            data_group_total.append(group)  
+
+        data_visualize=DataGroup(DataItem("Results rigging calc"," ",subgroup=DataGroup(*data_group_total)),
+                                            )
+        return DataResult(data_visualize)
