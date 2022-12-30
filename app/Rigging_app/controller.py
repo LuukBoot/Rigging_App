@@ -1,9 +1,10 @@
 from viktor import ViktorController
+from viktor.result import SetParamsResult
 from viktor.views import  PlotlyView, PlotlyResult, DataGroup, \
     DataItem, DataResult, DataView,PlotlyAndDataView,SVGView, \
         SVGAndDataView,SVGAndDataResult,SVGResult,Label,GeometryAndDataView,\
             GeometryAndDataResult,PlotlyAndDataResult
-
+from .calculations import Calc_SKL
 import numpy as np
 from .model import communicater_calculations
 from .parametrization import Parametrization
@@ -11,9 +12,37 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
 class Main_Controller(ViktorController):
-    label = 'Riggin Checks'
+    label = 'Rigging Checks'
     parametrization = Parametrization
+    def skew_load_factor(self,params,**kwargs):
+        data = communicater_calculations(params)
 
+        Data_skl = data.get_data_SKL
+        Data_general = data.get_data_general
+
+
+        
+
+        result= Calc_SKL(Data_skl,Data_general)
+        max_skew_load_factor=result.get_max_skew_load_factor
+        pitch_roll_angles=result.get_max_min_pitch_roll_angles
+        
+        return SetParamsResult({"tab_2":{
+                                    "section_3":{
+                                        "skl1":round(max_skew_load_factor[0],2),
+                                        "skl2":round(max_skew_load_factor[1],2),
+                                        "skl3":round(max_skew_load_factor[2],2),
+                                        "skl4":round(max_skew_load_factor[3],2),
+                                        "min_pitch":round(pitch_roll_angles["Min pitch"],2),
+                                        "max_pitch":round(pitch_roll_angles["Max pitch"],2),
+                                        "min_roll":round(pitch_roll_angles["Min roll"],2),
+                                        "max_roll":round(pitch_roll_angles["Max roll"],2)
+
+                                     
+
+                                    }  
+
+        }})
     @PlotlyView("OUTPUT",duration_guess=1)
     def data(self,params,**kwargs):
 

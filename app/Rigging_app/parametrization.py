@@ -2,12 +2,12 @@
 from viktor.parametrization import Parametrization, Tab, OptionField, \
     DynamicArray, TextField, Text, NumberField, LineBreak, Table, \
     Section, AutocompleteField,BooleanField, Lookup, RowLookup, \
-    MultiSelectField
+    MultiSelectField, SetParamsButton
 
 
 from .Default_inputs import Table_Lift_points, Fact_text, Fact_values,\
     get_SSF_options, get_point_options, Table_slings_grommets,df_rigging, \
-        Table_connect
+        Table_connect, Table_slings_SKl
 drop_list_connect = df_rigging["drop_list_connect"]
 class Parametrization(Parametrization):
     
@@ -113,7 +113,46 @@ class Parametrization(Parametrization):
                                     default =  Fact_text["Wear_application_factor"][0],
                                     description="See dnv 16.4.9",
                                     flex = 60)
+    # Tab2.section3 skew load factor 
+    tab_2.section_3=Section("Skew load factor")
+    tab_2.section_3.SKL=BooleanField("Is a four point sling, whis statical underterminated  ",
+                                    name="ans_SKL_analysis")
+    tab_2.section_3.lb1=LineBreak()
+    tab_2.section_3.Hook_x=NumberField("x position hook[m]",default=0,
+                                    visible=Lookup("ans_SKL_analysis"))
+    tab_2.section_3.Hook_y=NumberField("y position hook[m]",default=0,
+                                    visible=Lookup("ans_SKL_analysis"))
+    tab_2.section_3.Hook_z=NumberField("z position hook[m]",default=10,
+                                    visible=Lookup("ans_SKL_analysis"))
     
+
+    tab_2.section_3.table_lift_points_skl=Table("Lift points",default=Table_Lift_points,
+                                    visible=Lookup("ans_SKL_analysis"))
+    tab_2.section_3.table_lift_points_skl.x=NumberField("x[m]")
+    tab_2.section_3.table_lift_points_skl.y=NumberField("y[m]")
+    tab_2.section_3.table_lift_points_skl.z=NumberField("z[m]")
+
+
+    tab_2.section_3.table_slings=Table("Table slings",default=Table_slings_SKl,
+                                    visible=Lookup("ans_SKL_analysis"))
+    tab_2.section_3.table_slings.E_modulus=NumberField("E",prefix="[N/mm^2]")
+    tab_2.section_3.table_slings.D_slings=NumberField("D",prefix="[mm]")
+    tab_2.section_3.table_slings.Length=NumberField("L",prefix="[mm]")
+    tab_2.section_3.button = SetParamsButton('Calc skew load factor', 'skew_load_factor', longpoll=True,visible=Lookup("ans_SKL_analysis"))
+    tab_2.section_3.lb2=LineBreak()
+
+    tab_2.section_3.skl1=NumberField("Skew load factor 1",visible=Lookup("ans_SKL_analysis"),suffix="-")
+    tab_2.section_3.skl2=NumberField("Skew load factor 2",visible=Lookup("ans_SKL_analysis"),suffix="-")
+    tab_2.section_3.lb3=LineBreak()
+    tab_2.section_3.skl3=NumberField("Skew load factor 3",visible=Lookup("ans_SKL_analysis"),suffix="-")
+    tab_2.section_3.skl4=NumberField("Skew load factor 4",visible=Lookup("ans_SKL_analysis"),suffix="-")
+    tab_2.section_3.lb4=LineBreak()
+    tab_2.section_3.min_pitch=NumberField("Min pitch angle",visible=Lookup("ans_SKL_analysis"),suffix="deg")
+    tab_2.section_3.max_pitch=NumberField("Max pitch angle",visible=Lookup("ans_SKL_analysis"),suffix="deg")
+    tab_2.section_3.lb5=LineBreak()
+    tab_2.section_3.min_roll=NumberField("Min roll angle",visible=Lookup("ans_SKL_analysis"),suffix="deg")
+    tab_2.section_3.max_roll=NumberField("Max roll angle",visible=Lookup("ans_SKL_analysis"),suffix="deg")
+
     # Tab 3: Rigging 
     # Tab 3.section1 : Rigging General data
     tab_3 = Tab("Rigging")

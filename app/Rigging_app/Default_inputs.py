@@ -103,6 +103,12 @@ Table_slings_grommets = [{"ID_number":"Type id number",
 Table_connect =[{"side":"Upper","connections":'Hook',"dia":1,"SWL":1},
                 {"side":"Lower","connections":'Hook',"dia":1,"SWL":1},
 ]
+
+Table_slings_SKl = [{"E_modulus":210000,"D_slings":10,"Length":0},
+                        {"E_modulus":210000,"D_slings":10,"Length":0},
+                        {"E_modulus":210000,"D_slings":10,"Length":0},
+                        {"E_modulus":210000,"D_slings":10,"Length":0}]
+
 # Functions for visualtiaztion
 def get_point_options(params,**kwargs):
     point_names = ["A","B","C","D"]

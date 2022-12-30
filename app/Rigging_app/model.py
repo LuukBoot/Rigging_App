@@ -1,6 +1,7 @@
 
 from .calculations import Calc_COG_env, \
-    Calc_load_dis,Calc_factors,Calc_rigging,Calc_SKL
+    Calc_load_dis,Calc_factors,Calc_rigging,Calc_SKL,\
+        distance_points_3d
 from .Default_inputs import df_rigging
 
 class communicater_calculations: 
@@ -14,7 +15,7 @@ class communicater_calculations:
         general_params= params.tab_1
         general_factor_params =   params.tab_2.section_1
         SSF_params = params.tab_2.section_2
-        #skl_params= params.tab_2.section_3
+        skl_params= params.tab_2.section_3
         rigging_params= params.tab_3.section_1
         #other_rigging_params= params.tab_3.section_2
         #crane_params= params.tab_4
@@ -36,6 +37,8 @@ class communicater_calculations:
         self.data_general_factor = self.make_data_general_factor(
                                                 general_factor_params)
         self.data_rigging = self.make_data_rigging(rigging_params)
+        self.data_SKl = self.make_data_skl(skl_params)
+        print(self.data_SKl)
         #print(self.data_rigging)
         # Print statements kan worden verwijdert
         #print(_Calc_factors)
@@ -102,8 +105,8 @@ class communicater_calculations:
         for i in range(4):
             Hook_point=Data_SKl["Hook_point"]
             Lift_point=Data_SKl["Lift_points"][i]
-            #L=cal.distance_points_3d(Hook_point,Lift_point)
-            #print("Sling "+str(i+1)+": "+str(L))
+            L=distance_points_3d(Hook_point,Lift_point)
+            print("Sling "+str(i+1)+": "+str(L))
         return Data_SKl
 
     def make_data_SSF_factor(self, params):

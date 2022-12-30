@@ -6,7 +6,11 @@ from .parametrization import Fact_text, Fact_values
 import sympy as sym
 import json 
 import pandas as pd
-#filename="documents\skl_ans.txt"
+from pathlib import Path 
+
+# Determine pathfile to skl answer document
+Results_SKL = Path(__file__).parent
+Results_SKL_File_Path = Results_SKL.parent / "Data_output/Results_SKL.csv"
 
 pi = 3.14159265359
 
@@ -1539,7 +1543,7 @@ class Calc_SKL:
             self.Checks_SKL["SKL_factor"].append(SKl_factor)
             self.max_skew_load_factor[i] = SKl_factor 
         df_2_skl = pd.DataFrame.from_dict(Results_skl) 
-        df_2_skl.to_csv (r'documents\Results_skl.csv', index = False, header=True)
+        df_2_skl.to_csv (Results_SKL_File_Path, index = False, header=True)
         
         self.values_pitch_roll_angles["Max roll"] = max(list_loop["Roll"])
         self.values_pitch_roll_angles["Min roll"] = min(list_loop["Roll"])
