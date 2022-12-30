@@ -1758,7 +1758,7 @@ class Calc_load_dis:
            
             self._COG_shift_factor=COG_shift_factor_four_point(Lift_points,
                                                                COG_env)
-        print(self._COG_shift_factor)
+
     @property
     def return_load_dis(self):
         # Returning load distributie [%]
@@ -2294,7 +2294,7 @@ class Calc_rigging:
         
         for checks in Data_rigging:
             Calc = checks
-            print(checks)
+            
             # step 2 Determine factored dynamic rigging load
             # FDRL = LW*WCF*DAF*TEF*YAW
             Calc["TEF"] = self.TEF_factor(Calc["Points"])
@@ -2313,7 +2313,7 @@ class Calc_rigging:
             
             # step 5 Determine vertical load to lifting point
             # VLLP= FDRL * perc* COG*SKL
-            print(Calc)
+            
             Calc["VLLP"] = np.prod([Calc["FDRL"],
                                     Calc["perc"],
                                     Calc["COG"],
@@ -2550,19 +2550,19 @@ class Calc_rigging:
             When there is a grommet used the amount of parst is
             multiplied by two
         """
-        print(SLDF)
+        
       
         perc_1 = float(SLDF.split(":",1)[0])
         perc_2 = float(SLDF.split(":",1)[1])
 
         max_perc_sling_load_dis=max([perc_1,perc_2])/100
-        print(max_perc_sling_load_dis)
+        
         type=type.lower()
         str_1="grommet"
 
         # Determine if the type is a grommet or a sling
         if str_1 in type:
-            print("Het werkt")
+            
             n_parts=n_parts*2
 
         # Calculates the sldf factor(see excel lifting sheet for formula)

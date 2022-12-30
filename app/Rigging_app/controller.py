@@ -110,7 +110,7 @@ class Main_Controller(ViktorController):
        
         Riggin_checks=data.get_rigging_checks
 
-        print(Riggin_checks)
+
         #print(Riggin_results_total)
         
 
