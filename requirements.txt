@@ -1,0 +1,6 @@
+viktor==13.7.0
+plotly 
+numpy 
+sympy
+openpyxl
+mkdocs
