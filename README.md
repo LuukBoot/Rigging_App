@@ -14,9 +14,12 @@ Dit moet ik nog uitvogelen aan de hand van de documentatie van viktor
 ## How to use the project 
 Ik moet nog een handleiding maken, die komt hier te staan
 
+## App layout 
+Hier moet app layout komen
+
 ## Workflowdiagram 
 In this chapter the workflow diagram is described, see below the the total workflow diagram
-![This is a image](/Images/Workflow.jpg)
+![This is a image](/Images_read_me/Workflow.jpg)
 
 In the upper part of the figure the input of the application  is shown and  at the left the data bases for rigging equipment/ constants is shown. Both these database are excel sheets and the data in these files can easily be changed. With the help of the module openpyxl the data from the excel sheet is transformed to usefull data. 
 
