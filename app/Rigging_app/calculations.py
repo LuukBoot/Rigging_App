@@ -2,7 +2,7 @@
 import math
 import numpy as np
 from numpy.linalg import inv
-from .parametrization import Fact_values
+from .parametrization import Fact_text, Fact_values
 import sympy as sym
 import json 
 import pandas as pd
@@ -1726,10 +1726,10 @@ class Calc_load_dis:
         
         # Getting total COG envelope from Calc_cog_env Class
         COG_env = _Calc_COG_env.get_cog_env_total
-
+        
         # Determine total weight ob lifting object
         self.total_weight= weight
-
+        
         # Determine which method of calculating the load dis 
         if n==1:
             self._Load_dis=[1]
@@ -1758,7 +1758,7 @@ class Calc_load_dis:
            
             self._COG_shift_factor=COG_shift_factor_four_point(Lift_points,
                                                                COG_env)
-
+        print(self._COG_shift_factor)
     @property
     def return_load_dis(self):
         # Returning load distributie [%]
@@ -1779,7 +1779,7 @@ class Calc_load_dis:
         i=0
         for row in self._COG_shift_factor:
             max_cog_shift = max(row)/self._Load_dis[i]
-            Max_cog_shift_list.append(round(max_cog_shift))
+            Max_cog_shift_list.append(max_cog_shift)
             i+=1
         return Max_cog_shift_list
 
@@ -2279,6 +2279,7 @@ class Calc_rigging:
         WCF=general_factors["WCF"]
         YAW=general_factors["YAW"]
 
+
         # Making checks other equipment
         self.Rigging_other_calc_total={}
         
@@ -2293,7 +2294,7 @@ class Calc_rigging:
         
         for checks in Data_rigging:
             Calc = checks
-            
+            print(checks)
             # step 2 Determine factored dynamic rigging load
             # FDRL = LW*WCF*DAF*TEF*YAW
             Calc["TEF"] = self.TEF_factor(Calc["Points"])
@@ -2307,7 +2308,7 @@ class Calc_rigging:
         
 
             # Stap 4 bepalen skew load factor 
-            if Calc["SKL"][0] != Default_inputs.Fact_text["SKL"][1]:
+            if Calc["SKL"][0] != Fact_text["SKL"][3]:
                 Calc["SKL"][2] = factors_no_calculations("SKL",Calc["SKL"][0])
             
             # step 5 Determine vertical load to lifting point
@@ -2422,7 +2423,7 @@ class Calc_rigging:
             row["COG"] = self.COG_shift_factor(values["Points"])
             row["Perc"]=self.Load_lifting_point(row["Points"])
             row["TEF"]=self.TEF_factor(row["Points"])
-            if values["SKL"] == Default_inputs.Fact_text["SKL"][1]:
+            if values["SKL"] == Fact_text["SKL"][1]:
                 row["SKL"] = values["SKl_values"]
             else:
                 row["SKL"] = factors_no_calculations("SKL",values["SKL"])
