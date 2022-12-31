@@ -172,7 +172,8 @@ In tab 3, the values for the crane check are entered
 With the help of the method make_data_cranes the data is stored in the a dictionary see code snippet below:
 
 ```
-data_crane{str(Crane_name):{str(hoist): "Data":[float(Capacity),float(off_lead),float(RW)],
+data_crane{str(Crane_name):{"DDF": float(DDF_factor),
+                            str(hoist): "Data":[float(Capacity),float(off_lead),float(RW)],
                                         "Points": list(points that are lifted by hoist)}
 
 ```

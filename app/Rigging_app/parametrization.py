@@ -7,7 +7,8 @@ from viktor.parametrization import Parametrization, Tab, OptionField, \
 
 from .Default_inputs import Table_Lift_points, Fact_text, Fact_values,\
     get_SSF_options, get_point_options, Table_slings_grommets,df_rigging, \
-        Table_connect, Table_slings_SKl
+        Table_connect, Table_slings_SKl,Table_points_crane,Table_Crane_data,\
+            list_hoist
 drop_list_connect = df_rigging["drop_list_connect"]
 class Parametrization(Parametrization):
     
@@ -223,7 +224,41 @@ class Parametrization(Parametrization):
     tab_3.section_1.Rigging_data.Table_connecting_points=Table("Connecting points",
                                         default=Table_connect)
     tab_3.section_1.Rigging_data.Table_connecting_points.side=TextField("Which side")
-    tab_3.section_1.Rigging_data.Table_connecting_points.connections=AutocompleteField("Connected to "
-                                        ,options=drop_list_connect)
+    tab_3.section_1.Rigging_data.Table_connecting_points.connections=AutocompleteField("Connected to ",
+                                        options=drop_list_connect)
     tab_3.section_1.Rigging_data.Table_connecting_points.dia=NumberField("Diameter",suffix='mm')
     tab_3.section_1.Rigging_data.Table_connecting_points.SWL=NumberField("SWL",suffix='t')
+
+
+    # Tab_4: Crane
+    tab_4=Tab("Crane")
+    tab_4.section_1=Section("Lifted info")
+    tab_4.section_1.Lifted_by_data=Table("Lifting table",
+                                        default=Table_points_crane)
+    tab_4.section_1.Lifted_by_data.point=TextField("Lift point")
+    tab_4.section_1.Lifted_by_data.crane=AutocompleteField("Which crane",
+                                        options=["Crane 1","Crane 2","Not used"])
+    tab_4.section_1.Lifted_by_data.hoist=AutocompleteField("Which hoist",
+                                        options=list_hoist)
+
+    tab_4.section_2=Section("Data crane 1")
+    tab_4.section_2.Crane_name=TextField("Name crane",default="Boka lift 1")
+    tab_4.section_2.lb1=LineBreak()
+    tab_4.section_2.DDF=NumberField("Vessel dynamic design factor",suffix="[-]",default=1)
+    tab_4.section_2.lb2=LineBreak()
+    tab_4.section_2.table_crane1=Table("Data crane data",default=Table_Crane_data)
+    tab_4.section_2.table_crane1.Hoist=TextField("Which hoist")
+    tab_4.section_2.table_crane1.Capacity=NumberField("Capacity")
+    tab_4.section_2.table_crane1.offlead=NumberField("Offlead")
+    tab_4.section_2.table_crane1.RW=NumberField("Rigging weight")
+
+    tab_4.section_3=Section("Data crane 2")
+    tab_4.section_3.Crane_name=TextField("Name crane",default="Not used")
+    tab_4.section_3.lb1=LineBreak()
+    tab_4.section_3.DDF=NumberField("Vessel dynamic design factor",suffix="[-]",default=1)
+    tab_4.section_3.lb2=LineBreak()
+    tab_4.section_3.table_crane2=Table("Data crane data",default=Table_Crane_data)
+    tab_4.section_3.table_crane2.Hoist=TextField("Which hoist")
+    tab_4.section_3.table_crane2.Capacity=NumberField("Capacity")
+    tab_4.section_3.table_crane2.offlead=NumberField("Offlead")
+    tab_4.section_3.table_crane2.RW=NumberField("Rigging weight")

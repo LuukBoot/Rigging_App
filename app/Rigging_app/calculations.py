@@ -2262,20 +2262,21 @@ class Calc_factors:
     @ property 
     def get_SSF_factors_total(self):
         return self.SSF_factors_total
-
   
 class Calc_rigging:    
     def __init__(self,
                 Data_rigging,
                 _Calc_factors,
                 _Calc_load_dis,
-                weight):
+                weight,
+                SKL_results):
         
         # Getting values from other calc classes 
 
         self._Calc_load_dis=_Calc_load_dis
         general_factors = _Calc_factors.get_general_factors
         self.TEF_factors = general_factors["TEF"]
+
 
 
         # Factors 
@@ -2314,7 +2315,8 @@ class Calc_rigging:
             # Stap 4 bepalen skew load factor 
             if Calc["SKL"][0] != Fact_text["SKL"][3]:
                 Calc["SKL"][2] = factors_no_calculations("SKL",Calc["SKL"][0])
-            
+            else:
+                Calc["SKL"][2] = SKL_results[int(Calc["SKL"][1])-1]
             # step 5 Determine vertical load to lifting point
             # VLLP= FDRL * perc* COG*SKL
             
@@ -2598,7 +2600,8 @@ class Calc_rigging:
                 BRF=BRF*0.935
         
         return BRF
-        
+
+
     @property
     def get_rigging_calc_total(self):
         return self.Rigging_calc_total
@@ -2607,14 +2610,13 @@ class Calc_rigging:
     def get_rigging_other_equipment(self):
         return self.Rigging_other_calc_total
 
-class crane_calculations:
+class Calc_crane:
     def __init__(self,
-                _answers_crane,
-                Calc_load_dis,
-                general_factors,
-                Calc_tilt_factor,
-                weight,
-                N_lifts):
+                Data_crane,
+                _Calc_factors,
+                _Calc_load_dis,
+                weight):
+
         """_summary_:
         This  class determine the crane verification.
        
@@ -2640,42 +2642,60 @@ class crane_calculations:
                                     load_dis[2]= Point C dis[-]
                                     load_dis[3]= Point C dis[-]
         """
-       
+        # Getting values from other calc classes 
+
+        self._Calc_load_dis=_Calc_load_dis
+        general_factors = _Calc_factors.get_general_factors
+        self.TEF_factors = general_factors["TEF"]       
         
         #print(_answers_crane) # Kan worden verwijdert
         # Calculate FDCL
-        FDCL=np.prod([weight["LW"],
+        FDCL=np.prod([weight,
                       general_factors["WCF"],
                       general_factors["DAF"],
                       general_factors["COGCrane"]])
 
-        # Share variables with other methods
-        self._load_dis=Calc_load_dis.return_load_dis
-        self._tilt_factor=Calc_tilt_factor.get_tef_factors
+        self.Crane_checks = {}
+        for crane, Crane_data in Data_crane.items():
+            Hoist_checks = {}
+            Crane_ddf = Crane_data["DDF"]
+            self.Crane_checks.update({crane:{"DDF":Crane_ddf}})
+            for hoist, data_hoist in Crane_data.items():
 
-        # Crane checks
-        self.Crane_checks={}
-        for crane, info_crane in _answers_crane.items():
-            Crane_info={}
-            Crane_info["DDF"]=info_crane[-1]
-            for hoist,info_hoist in info_crane[0].items():
-                info={}
-                
-                info["points"]=info_hoist[:-3]
-                info["RW"]=info_hoist[-1]
-                info["perc"]=self.Load_lifting_point(info["points"])
-                info["TEF"]=self.TEF_factor(info["points"])
-                info["Offlead"]=info_hoist[-2]
-                info["CAP"]=info_hoist[-3]
-                info["HLV"]=(FDCL*info["perc"]*1+info["RW"]*general_factors["DAF"])/Crane_info["DDF"]
-                info["HL"]=info["HLV"]/math.cos(math.radians(info["Offlead"]))
-                info["UC"]=info["HL"]/info["CAP"]
-                info["perc"]=info["perc"]*100
-                Crane_info.update({hoist:info})
-            self.Crane_checks.update({info_crane[-2]:Crane_info})
-        
+                if hoist != "DDF":
+                    info={}
+
+                    info["CAP"] = data_hoist["Data"][0]
+                    info["Offlead"] = data_hoist["Data"][1]
+                    info["RW"] = data_hoist["Data"][2]
+                    info["Points"] = data_hoist["Points"]
+                    info["perc"] = self.Load_lifting_point(info["Points"])
+                    info["TEF"] = self.TEF_factor(info["Points"])
+                    info["FDCL"] = FDCL * info["TEF"]
+                    # Calculating HLV 
+                    # HLV = FDCL * perc + RW * DAF / DDF
+                    info["HLV"]=(FDCL*info["perc"]*1+info["RW"]*general_factors["DAF"])/Crane_ddf
+                    # Calculating HL
+                    # HL = hlv/ cos(offlead)
+                    offlead_value = math.cos(math.radians(info["Offlead"]))
+                    info["HL"] = info["HLV"]/offlead_value
+                    info["UC"] = info["HL"]/info["CAP"]
+                    self.Crane_checks[crane].update({hoist:info})
+
+
+
+
+
 
     def TEF_factor(self,points):
+        """_summary_
+        This function determines, which
+        tef factor suits with the point
+
+
+        """
+        # getting tef factors 
+        
         point_index=None
         for point in points:
             if point=="A":
@@ -2687,17 +2707,17 @@ class crane_calculations:
             if point=="D":
                 point_index=3
         
-        return self._tilt_factor[point_index]
-    
+        return self.TEF_factors[point_index]
+
+
     def Load_lifting_point(self,points):
         """_summary_
         This function determines, which
         load perc factor suits with the point
-        if there multiple points connected to
-        the hook the perc will be added with each other
 
-        """        
-        
+        """
+        # Gettting laod perc from calc load dis class
+        load_perc = self._Calc_load_dis.return_load_dis         
         point_index=[]
         for point in points:
             if point=="A":
@@ -2711,16 +2731,16 @@ class crane_calculations:
 
 
         if len(point_index)==1:
-            load_perc=self._load_dis[point_index[0]]
+            load_perc=load_perc[point_index[0]]
         if len(point_index)==2:
-            load_perc=self._load_dis[point_index[0]]+self._load_dis[point_index[1]] 
+            load_perc=load_perc[point_index[0]]+load_perc[point_index[1]] 
         if len(point_index)==3:
-            load_perc=self._load_dis[point_index[0]]+self._load_dis[point_index[1]]+self._load_dis[point_index[2]] 
+            load_perc=load_perc[point_index[0]]+load_perc[point_index[1]] +load_perc[point_index[2]]
         if len(point_index)==4:
-            load_perc=self._load_dis[point_index[0]]+self._load_dis[point_index[1]]+self._load_dis[point_index[2]]+self._load_dis[point_index[3]]
+            load_perc=load_perc[point_index[0]]+load_perc[point_index[1]]  +load_perc[point_index[2]]+load_perc[point_index[3]]
 
         return load_perc
-
+    
     @property 
     def get_crane_results(self):
         return self.Crane_checks

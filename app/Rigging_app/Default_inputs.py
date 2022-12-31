@@ -90,6 +90,7 @@ for i in  range(1,number_of_row_file):
         
 # Default tables
 
+list_hoist=["Main hoist","Aux hoist","Whip hoist"]
 Table_Lift_points=[{"point":"A","x":0,"y":0,"z":0},
                     {"point":"B","x":0,"y":0,"z":0},
                     {"point":"C","x":0,"y":0,"z":0},
@@ -108,6 +109,13 @@ Table_slings_SKl = [{"E_modulus":210000,"D_slings":10,"Length":0},
                         {"E_modulus":210000,"D_slings":10,"Length":0},
                         {"E_modulus":210000,"D_slings":10,"Length":0},
                         {"E_modulus":210000,"D_slings":10,"Length":0}]
+Table_points_crane = [{"point":"A","crane":"Crane 1","hoist":list_hoist[1]},
+                    {"point":"B","crane":"Crane 1","hoist":list_hoist[1]},
+                    {"point":"C","crane":"Crane 1","hoist":list_hoist[1]},
+                    {"point":"D","crane":"Crane 1","hoist":list_hoist[1]}, ]  
+Table_Crane_data = [{"Hoist":list_hoist[0],"Capacity":100,"offlead":0,"RW":0},
+                    {"Hoist":list_hoist[1],"Capacity":100,"offlead":0,"RW":0},
+                    {"Hoist":list_hoist[2],"Capacity":100,"offlead":0,"RW":0}]
 
 # Functions for visualtiaztion
 def get_point_options(params,**kwargs):

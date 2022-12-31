@@ -175,3 +175,69 @@ class Main_Controller(ViktorController):
         data_visualize=DataGroup(DataItem("Results rigging calc"," ",subgroup=DataGroup(*data_group_total)),
                                             )
         return DataResult(data_visualize)
+
+
+    @DataView("Crane ouput", duration_guess=1)
+    def crane_data(self,params,**kwargs):
+        
+        data = communicater_calculations(params)
+       
+        Crane_checks=data.get_crane_checks
+    
+        print(Crane_checks)
+        names=list(Crane_checks.keys())
+        print(names)
+        data_group_crane_1_hoist=[]
+        data_total=[]
+
+        for info, values in Crane_checks[names[0]].items():
+            
+            if info  != "DDF":
+                group=DataItem("Checks " +info," ",subgroup=DataGroup(
+                        DataItem("Points",values["Points"],prefix='[-]',explanation_label="Which points is it connected to"),
+                        DataItem("Percentage",round(values["perc"],2),prefix='[%]',explanation_label="Percentage vertical load"),
+                        DataItem("TEF",round(values["TEF"],2),prefix='[-]',explanation_label="Tilt effect factor"),
+                        DataItem("Offlead",round(values["Offlead"],2),prefix='[deg]',explanation_label="Angle with vertical, in line with boom(offlead)"),
+                        DataItem("CAP",values["CAP"],prefix='[t]',explanation_label="Capacity hoist"),
+                        DataItem("HLV",round(values["HLV"],2),prefix='[t]',explanation_label="Vertical hook load"),
+                        DataItem("HL",round(values["HL"],2),prefix='[t]',explanation_label="Hook load hoist HLV/cos(offlead)"),
+                        DataItem("UC",round(values["UC"],2),prefix='[-]',explanation_label="Unity check"),
+                        ))
+                data_group_crane_1_hoist.append(group)
+            else:
+                DDF_crane1=values
+        data_group_crane_2_hoist=[]
+        if len(names)==2:
+            
+            for info, values in Crane_checks[names[1]].items():
+                
+                if info  != "DDF":
+                    group=DataItem("Checks " +info," ",subgroup=DataGroup(
+                            DataItem("Points",values["Points"],prefix='[-]',explanation_label="Which points is it connected to"),
+                            DataItem("Percentage",round(values["perc"],2),prefix='[%]',explanation_label="Percentage vertical load"),
+                            DataItem("TEF",round(values["TEF"],2),prefix='[-]',explanation_label="Tilt effect factor"),
+                            DataItem("Offlead",round(values["Offlead"],2),prefix='[deg]',explanation_label="Angle with vertical, in line with boom(offlead)"),
+                            DataItem("CAP",values["CAP"],prefix='[t]',explanation_label="Capacity hoist"),
+                            DataItem("HLV",round(values["HLV"],2),prefix='[t]',explanation_label="Vertical hook load"),
+                            DataItem("HL",round(values["HL"],2),prefix='[t]',explanation_label="Hook load hoist HLV/cos(offlead)"),
+                            DataItem("UC",round(values["UC"],2),prefix='[-]',explanation_label="Unity check"),
+                            ))
+                    data_group_crane_2_hoist.append(group)
+                else:
+                    DDF_crane2=values
+        else:
+            DDF_crane2=1
+            names.append("Not used")
+
+                
+        groub_crane1=DataGroup(DataItem("Checks: "+names[0],"DDF:"+str(DDF_crane1),subgroup=DataGroup(*data_group_crane_1_hoist)),
+                                DataItem("Checks: "+names[1],"DDF:"+str(DDF_crane2),subgroup=DataGroup(*data_group_crane_2_hoist)))
+
+
+            
+
+
+
+
+
+        return DataResult(groub_crane1)

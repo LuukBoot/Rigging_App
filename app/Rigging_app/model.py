@@ -1,7 +1,7 @@
 
 from .calculations import Calc_COG_env, \
     Calc_load_dis,Calc_factors,Calc_rigging,Calc_SKL,\
-        distance_points_3d
+        distance_points_3d,Calc_crane
 from .Default_inputs import df_rigging
 
 class communicater_calculations: 
@@ -18,7 +18,7 @@ class communicater_calculations:
         skl_params= params.tab_2.section_3
         rigging_params= params.tab_3.section_1
         #other_rigging_params= params.tab_3.section_2
-        #crane_params= params.tab_4
+        crane_params = params.tab_4
         #file_params= params.tab_5
 
 
@@ -30,6 +30,7 @@ class communicater_calculations:
             tef_factor.append(1)
 
         # Getting data 
+        self.data_cranes = self.make_data_cranes(crane_params)
         self.data_general = self.make_data_general(general_params)
 
         self.data_SSF_factors = self.make_data_SSF_factor(
@@ -38,7 +39,11 @@ class communicater_calculations:
                                                 general_factor_params)
         self.data_rigging = self.make_data_rigging(rigging_params)
         self.data_SKl = self.make_data_skl(skl_params)
-        print(self.data_SKl)
+        SKL_results = [skl_params["skl1"],
+                       skl_params["skl2"],
+                       skl_params["skl3"],
+                       skl_params["skl4"]]
+        #print(self.data_SKl)
         #print(self.data_rigging)
         # Print statements kan worden verwijdert
         #print(_Calc_factors)
@@ -68,7 +73,13 @@ class communicater_calculations:
         _Calc_rigging = Calc_rigging(self.data_rigging,
                                      _Calc_factors,
                                      _Calc_load_dis,
-                                     self.data_general["LW"])
+                                     self.data_general["LW"],
+                                     SKL_results)
+        _Calc_crane = Calc_crane(self.data_cranes,
+                                 _Calc_factors,
+                                 _Calc_load_dis,
+                                 self.data_general["LW"])
+
 
         # Making attributes so it can be shared with the other method 
         self.Load_dis_perc = _Calc_load_dis.return_load_dis
@@ -76,7 +87,7 @@ class communicater_calculations:
         self.factors = _Calc_factors.get_general_factors
         self.COG_shift = _Calc_load_dis.get_max_cog_shifts
         self.Rigging_checks = _Calc_rigging.get_rigging_calc_total
-
+        self.Crane_checks = _Calc_crane.get_crane_results
     def make_data_skl(self,params):
         Data_SKl ={}
         Data_SKl["Hook_point"] = [params["Hook_x"]*1000,
@@ -371,3 +382,6 @@ class communicater_calculations:
     def get_rigging_checks(self):
         return self.Rigging_checks
 
+    @property 
+    def get_crane_checks(self):
+        return self.Crane_checks
