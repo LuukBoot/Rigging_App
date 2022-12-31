@@ -52,6 +52,7 @@ class Main_Controller(ViktorController):
         N_lifts = data.get_n_lifts
         data_factors = data.get_data_factors
         point_names = ["A","B","C","D"]
+        TEF_angles = data.get_angles
         # making figure 
         fig = make_subplots(
             rows=3, cols=1,
@@ -78,10 +79,15 @@ class Main_Controller(ViktorController):
             df_table_2[0].append("SSF"+str(i))
             df_table_2[1].append("Sling safety factor")
             df_table_2[2].append(factors["SSF"+str(i)])
-        
+        df_table_2[0].append("COG")
+        df_table_2[1].append(data_factors["COG_envelope"])
+        df_table_2[2].append("see table below")
+        df_table_2[0].append("TEF")
+        df_table_2[1].append(TEF_angles)
+        df_table_2[2].append("See table below")
         df_table_3= [point_names[:N_lifts],
                      factors["COG_envelope"],
-                     factors["TEF"]]
+                     np.around(factors["TEF"],3)]
 
         fig.add_trace(
             go.Table(

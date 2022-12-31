@@ -1,7 +1,7 @@
 
 from .calculations import Calc_COG_env, \
     Calc_load_dis,Calc_factors,Calc_rigging,Calc_SKL,\
-        distance_points_3d,Calc_crane
+        distance_points_3d,Calc_crane, Calc_TEF_factor
 from .Default_inputs import df_rigging
 from viktor.errors import UserError
 
@@ -66,12 +66,19 @@ class communicater_calculations:
                                       self.data_general["COG"],
                                       self.N_lifts,
                                       self.data_general["LW"])
+        _Calc_TEF_factor = Calc_TEF_factor(self.data_general["Lift_points"],
+                                           self.data_general["COG"],
+                                           _Calc_COG_env,
+                                           self.N_lifts,
+                                           self.data_general_factor,
+                                           _Calc_load_dis,
+                                           )
         _Calc_factors = Calc_factors(self.data_general_factor,
                                     _Calc_load_dis,
                                     self.data_general["LW"],
                                     self.data_SSF_factors,
                                     self.N_lifts,
-                                    tef_factor)
+                                    _Calc_TEF_factor)
         _Calc_rigging = Calc_rigging(self.data_rigging,
                                      _Calc_factors,
                                      _Calc_load_dis,
@@ -92,6 +99,7 @@ class communicater_calculations:
         self.Rigging_checks = _Calc_rigging.get_rigging_calc_total
         self.Rigging_checks_other= _Calc_rigging.get_rigging_other_equipment
         self.Crane_checks = _Calc_crane.get_crane_results
+        self.TEF_angles = _Calc_TEF_factor.get_angles
     def make_data_skl(self,params):
         Data_SKl ={}
         Data_SKl["Hook_point"] = [params["Hook_x"]*1000,
@@ -239,13 +247,13 @@ class communicater_calculations:
             Data_general_factor[key] = params[key]
         Data_general_factor["TEF"] = [0,0]
         if self.Roll_bool == True:
-            Roll_angle = params['tilt_factor_x_axes_angle']
+            Roll_angle = params['TEF_x_angle']
             Data_general_factor["TEF"][0] = Roll_angle
         else:
             Data_general_factor["TEF"][0] = 0
         
         if self.Pitch_bool == True:
-            Pitch_angle = params['tilt_factor_y_axes_angle']
+            Pitch_angle = params['TEF_y_angle']
             Data_general_factor["TEF"][1] = Pitch_angle
         else:
             Data_general_factor["TEF"][1] = 0
@@ -427,3 +435,7 @@ class communicater_calculations:
     @property 
     def get_crane_checks(self):
         return self.Crane_checks
+    
+    @ property 
+    def get_angles(self):
+        return self.TEF_angles

@@ -1890,21 +1890,29 @@ class Calc_load_dis:
             i+=1
         return Max_cog_shifts_only_y
     
-class tilt_calc:
+class Calc_TEF_factor:
     def __init__(self,
                  Lift_points,
                  COG,
-                 calc_COG,
+                 _Calc_COG_env,
                  n,
-                 angle_pitch,
-                 angle_roll,
-                 Calc_load_dis,
-                 Calc_COG):
+                 Data_general_factor,
+                 _Calc_load_dis):
+
+        angle_roll = Data_general_factor["TEF"][0]
+        angle_pitch = Data_general_factor["TEF"][1]
 
         self.n=n
         self.Lift_points=Lift_points
         self.COG=COG
-        self.COG_env_size=calc_COG.get_cog_env_size
+        # Getting info from other calculations classes 
+        COG_envelope_y = _Calc_COG_env.get_cog_env_y
+        COG_envelope_x = _Calc_COG_env.get_cog_env_x
+        COG_envelope_both = _Calc_COG_env.get_cog_env_both
+        Load_dis_y = _Calc_load_dis.get_max_load_dis_y
+        Load_dis_x = _Calc_load_dis.get_max_load_dis_x
+        load_dis_both = _Calc_load_dis.get_max_load_dis_both
+        self.COG_env_size=_Calc_COG_env.get_cog_env_size
         # makin dictionary so it can store all checks 
         self.checks_end_TEF={"ANS_envelope_TILT": None,
                             "ANS_TILT_Angles":None,
@@ -1923,22 +1931,22 @@ class tilt_calc:
                 self.TEF_factor.append(1)
         else:
             if angle_pitch==0:
-                Load_dis_without_tilt = Calc_load_dis.get_load_dis_only_y
-                COG_envelope = Calc_COG.get_cog_envelope_y
+                Load_dis_without_tilt = Load_dis_y
+                COG_envelope = COG_envelope_y
                 self.checks_end_TEF["ANS_envelope_TILT"]=" Envelope only y-direction"
                 self.checks_end_TEF["ANS_TILT_Angles"]="only roll"
                 self.checks_end_TEF["Tilt_angle"]="Roll: "+str(angle_roll)+"[deg]" 
                 angles_list=[[angle_roll,0],[-angle_roll,0]]
             elif angle_roll==0:
-                Load_dis_without_tilt = Calc_load_dis.get_load_dis_only_x
-                COG_envelope = Calc_COG.get_cog_envelope_x
+                Load_dis_without_tilt = Load_dis_x
+                COG_envelope = COG_envelope_x
                 angles_list=[[0,angle_pitch],[0,-angle_pitch]]
                 self.checks_end_TEF["ANS_envelope_TILT"]=" Envelope only x-direction"
                 self.checks_end_TEF["ANS_TILT_Angles"]="only pitch"
                 self.checks_end_TEF["Tilt_angle"]="Pitch: " + str(angle_pitch)+"[deg]"
             else:
-                Load_dis_without_tilt = Calc_load_dis.get_load_dis_both
-                COG_envelope = Calc_COG.get_cog_envelope_both
+                Load_dis_without_tilt = load_dis_both
+                COG_envelope = COG_envelope_both
                 angles_list=[[angle_roll,angle_pitch],
                             [-angle_roll,-angle_pitch],
                             [-angle_roll,angle_pitch],
@@ -1995,7 +2003,7 @@ class tilt_calc:
                         checks_TEF[key].append(values[index])
 
             
-            self.clean_up_data(checks_TEF)
+            #self.clean_up_data(checks_TEF)
 
         # making list so that the max value can be determined 
         self.angle_roll=angle_roll
@@ -2116,7 +2124,8 @@ class tilt_calc:
         The first step is determine the coardinates of the lifitng point 
         on plane 1 
 
-        The second step is 
+        The second step is to calculated the lifting points, based on
+        the z-coardinates of the lifting points
 
         args:
             angles[array[1x2]: angles[0]= Roll angle[deg]
@@ -2168,13 +2177,7 @@ class tilt_calc:
             self.checks_end_TEF[key]=[ ]
             for index in indexen:
                 self.checks_end_TEF[key].append(values[index])
-            
-
-
-
-
-        
-           
+                
     @property
     def get_TEF_checks(self):
         return self.checks_end_TEF
@@ -2195,7 +2198,7 @@ class Calc_factors:
                       weight,
                       data_SSF_factor,
                       N_lifts,
-                      TEF_factors):
+                      _Calc_TEF_factor):
         """_summary_
         This class desrebis all general factors, and also the slings safety factors
 
@@ -2205,7 +2208,8 @@ class Calc_factors:
             Factors Daf AND tef needs calculations that is why they cannot be determined by function factors_no_calculations
 
         """
-        # Getting COG shift from Calc_load dis class
+        # Getting COG shift from Calc_load dis class and TEF factor from calc class
+        TEF_factors = _Calc_TEF_factor.get_tef_factors
         COG_shifts = _Calc_load_dis.get_max_cog_shifts
         self.general_factors={}
         # WCF/COGcrane/YAW factors determined
