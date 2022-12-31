@@ -6,6 +6,8 @@ from .Default_inputs import df_rigging
 from viktor.errors import UserError
 from viktor.external.word import render_word_file, WordFileImage
 from viktor.external.word import WordFileTag as Tag
+import matplotlib.pyplot as plt
+from pathlib import Path 
 
 class communicater_calculations: 
 
@@ -97,12 +99,14 @@ class communicater_calculations:
         # Making attributes so it can be shared with the other method 
         self.Load_dis_perc = _Calc_load_dis.return_load_dis
         self.Load_dis_t = _Calc_load_dis.get_load_dis_tons
+        self.COG_shift_total = _Calc_load_dis.get_cog_shifts_total 
         self.factors = _Calc_factors.get_general_factors
         self.COG_shift = _Calc_load_dis.get_max_cog_shifts
         self.Rigging_checks = _Calc_rigging.get_rigging_calc_total
         self.Rigging_checks_other= _Calc_rigging.get_rigging_other_equipment
         self.Crane_checks = _Calc_crane.get_crane_results
         self.TEF_angles = _Calc_TEF_factor.get_angles
+
     def make_data_skl(self,params):
         Data_SKl ={}
         Data_SKl["Hook_point"] = [params["Hook_x"]*1000,
@@ -443,10 +447,14 @@ class communicater_calculations:
     def get_angles(self):
         return self.TEF_angles
 
+    @property 
+    def get_cog_shift_calc_total(self):
+        return self.COG_shift_total
 
 def Make_components(data,params_tab5):
     point_names = ["A","B","C","D"]
     comp = []
+    N_lifts = data.get_n_lifts
 
     # Cover sheet 
     comp.append(Tag("Name",params_tab5["name"]))
@@ -455,7 +463,108 @@ def Make_components(data,params_tab5):
     comp.append(Tag("project_no",params_tab5["project_number"]))
     comp.append(Tag("show_value",True))
 
+    # Chapter 3 Object data 
+    # Import data 
+    Data_general_lifting = data.get_data_general
+    load_dis_perc = data.get_load_dis_perc
+    load_dis_t = data.get_load_dis_t   
+    COG_shift_total = data.get_cog_shift_calc_total 
+    # Chapter 3.1 Mass 
+    comp.append(Tag("LW",Data_general_lifting["LW"]))
+    # Chapter 3.2 Coardinates lift/point/COG 
+    # make image 
+    make_top_view(Data_general_lifting,N_lifts)
+    Top_view_File = Path(__file__).parent
+    Top_view_File_path = Top_view_File.parent / "Data_output/Top_view.png"
+    with open(Top_view_File_path, 'rb') as image:
+        word_file_image = WordFileImage(image, "Top_view_image")
+    comp.append(word_file_image)
+
+    # Table lift points 
+    table_lift_points = []
+    for i in range(N_lifts):
+        table_lift_points.append({"point":point_names[i],
+                                    "x":Data_general_lifting["Lift_points"][i][0]/1000,
+                                    "y":Data_general_lifting["Lift_points"][i][1]/1000,
+                                    "z":Data_general_lifting["Lift_points"][i][2]/1000,
+                                    "perc":round(load_dis_perc[i]*100,2),
+                                    "t":load_dis_t[i]})
+    comp.append(Tag("table_lift_points",table_lift_points))
+    # Table COG 
+    comp.append(Tag("COG_x",Data_general_lifting["COG"][0]/1000))
+    comp.append(Tag("COG_y",Data_general_lifting["COG"][1]/1000))
+    comp.append(Tag("COG_z",Data_general_lifting["COG"][2]/1000))   
+
+    # Chapter 3.3 object geometry 
+    comp.append(Tag("Object_length",Data_general_lifting["Obj_geo"][0]/1000))
+    comp.append(Tag("Object_width",Data_general_lifting["Obj_geo"][1]/1000))
+    comp.append(Tag("Object_height",Data_general_lifting["Obj_geo"][2]/1000))
+    # Chapter 3.3.1 COG envelope
+    comp.append(Tag("COG_envelope_x",Data_general_lifting["Obj_geo"][0]*0.05))
+    comp.append(Tag("COG_envelope_y",Data_general_lifting["Obj_geo"][1]*0.05))
+    comp.append(Tag("COG_envelope_z",Data_general_lifting["Obj_geo"][2]*0.05))
+
+    # Chapter 3.4 COG shift factor total
+    table_cog_shift_factor_total=[]
+    i=0
+    for point,values in COG_shift_total.items():
+        if i<N_lifts:
+            row={}
+            row["point"]=point
+            row["perc_b"]=values["both"][0]
+            row["cog_b"]=values["both"][1]
+            row["perc_x"]=values["x"][0]
+            row["cog_x"]=values["x"][1]
+            row["perc_y"]=values["y"][0]
+            row["cog_y"]=values["y"][1]
+            table_cog_shift_factor_total.append(row)
+        i = i+1
+    comp.append(Tag("COG_shift_calc_total",table_cog_shift_factor_total))
+
 
     return comp
 
 
+def make_top_view(params,N_lifts):
+        
+        lifting_points=params["Lift_points"]
+        COG=params["COG"]
+        object_geometry=params["Obj_geo"]
+
+        point_names=["A","B","C","D"]
+        # making list for outer boundaries
+        x_dist=object_geometry[0]/2000
+        y_dist=object_geometry[1]/2000
+        x_list=[-x_dist,x_dist,x_dist,-x_dist,-x_dist]
+        y_list=[y_dist,y_dist,-y_dist,-y_dist,y_dist]
+        fig=plt.figure()
+        plt.title("Top view")
+        plt.ylabel("y[m]")
+        plt.xlabel("x[m]")
+        
+
+
+        size_arrow=((object_geometry[0]+object_geometry[1])/2000)*0.1
+   
+    
+        for i in range(N_lifts):
+            x_lift=lifting_points[i][0]/1000
+            y_lift=lifting_points[i][1]/1000
+            plt.scatter(x_lift,y_lift,s=20,c="Blue")
+            plt.text(x_lift,y_lift,point_names[i],fontsize=15)
+
+        
+        x_cog=COG[0]/1000
+        y_cog=COG[1]/1000
+        plt.grid()
+        plt.scatter(x_cog,y_cog,s=20,c="Black")
+        plt.text(x_cog,y_cog,"COG",fontsize=15)
+        plt.plot(x_list,y_list,c="green",linewidth=2)
+
+        fig.set_size_inches(6.5, 3.5)
+        Top_view_File = Path(__file__).parent
+        Top_view_File_path = Top_view_File.parent / "Data_output/Top_view.png"
+        plt.savefig(Top_view_File_path)
+
+        
+        plt.close()
