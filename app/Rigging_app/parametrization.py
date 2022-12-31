@@ -2,7 +2,7 @@
 from viktor.parametrization import Parametrization, Tab, OptionField, \
     DynamicArray, TextField, Text, NumberField, LineBreak, Table, \
     Section, AutocompleteField,BooleanField, Lookup, RowLookup, \
-    MultiSelectField, SetParamsButton
+    MultiSelectField, SetParamsButton,MultiFileField, DownloadButton
 
 
 from .Default_inputs import Table_Lift_points, Fact_text, Fact_values,\
@@ -283,5 +283,18 @@ class Parametrization(Parametrization):
     tab_4.section_3.table_crane2.offlead=NumberField("Offlead")
     tab_4.section_3.table_crane2.RW=NumberField("Rigging weight")
 
-
+    # Section file params
+    
+    tab_5=Tab("General information")
+    tab_5.name=TextField("What is your name?")
+    tab_5.lb1=LineBreak()
+    tab_5.name_checked=TextField("Name of person that checked")
+    tab_5.lb2=LineBreak()
+    tab_5.name_client=TextField("Name of client")
+    tab_5.lb3=LineBreak()
+    tab_5.project_number=TextField("What is project number")
+    tab_5.lb4=LineBreak()
+    tab_5.files = MultiFileField('Upload drawings ', file_types=['.png', '.jpg', '.jpeg'], max_size=5_000_000)
+    tab_5.lb5=LineBreak()
+    tab_5.button= DownloadButton('Download word file', method='perform_word_document_download')
     
