@@ -135,11 +135,25 @@ class Main_Controller(ViktorController):
         data = communicater_calculations(params)
        
         Riggin_checks=data.get_rigging_checks
-
-
+        Rigging_other_checks=data.get_rigging_checks_other
+        print(Rigging_other_checks)
         #print(Riggin_results_total)
         
-
+        data_group_equipment=[]
+        for name,results in Rigging_other_checks.items():
+            group=DataItem(name," ",subgroup=DataGroup(
+                        DataItem("Type",results["Type"],explanation_label="Type of equipment:"),
+                        DataItem("id_number",results["id_number"],explanation_label="Id number:"),
+                        DataItem("Weight",results["Weight"],prefix='[kg]',explanation_label="Weight of object"),
+                        DataItem("WLL",results["WLL"],prefix='[t]',explanation_label="Working load limit"),
+                        DataItem("COG",round(results["COG"],2),prefix='[-]',explanation_label="COG shift factor"),
+                        DataItem("TEF",round(results["TEF"],2),prefix='[-]',explanation_label="Tilt effect factor"),
+                        DataItem("SKL",round(results["SKL"][2],2),prefix='[-]',explanation_label="Skew load factor"),
+                        DataItem("Perc",round(results["Perc"]*100,2),prefix='[%]',explanation_label="Percentage of load"),
+                        DataItem("MDRL",round(results["MDRL"],2),prefix='[t]',explanation_label="Maximum dynamic rigging load"),
+                        DataItem("Unity check",round(results["Uc"],2),prefix='[-]',explanation_label="DHL/WLL"),))
+            data_group_equipment.append(group)
+        
         data_group_total=[]
         for rigging_point,results in Riggin_checks.items():
             group=DataItem(rigging_point," ",subgroup=DataGroup(
@@ -173,7 +187,7 @@ class Main_Controller(ViktorController):
             data_group_total.append(group)  
 
         data_visualize=DataGroup(DataItem("Results rigging calc"," ",subgroup=DataGroup(*data_group_total)),
-                                            )
+                                            DataItem("Results equipment"," ",subgroup=DataGroup(*data_group_equipment)))
         return DataResult(data_visualize)
 
 

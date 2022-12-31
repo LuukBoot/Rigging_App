@@ -3,6 +3,7 @@ from .calculations import Calc_COG_env, \
     Calc_load_dis,Calc_factors,Calc_rigging,Calc_SKL,\
         distance_points_3d,Calc_crane
 from .Default_inputs import df_rigging
+from viktor.errors import UserError
 
 class communicater_calculations: 
     def __init__(self,params,**kwargs):
@@ -17,7 +18,7 @@ class communicater_calculations:
         SSF_params = params.tab_2.section_2
         skl_params= params.tab_2.section_3
         rigging_params= params.tab_3.section_1
-        #other_rigging_params= params.tab_3.section_2
+        other_rigging_params= params.tab_3.section_2
         crane_params = params.tab_4
         #file_params= params.tab_5
 
@@ -39,6 +40,7 @@ class communicater_calculations:
                                                 general_factor_params)
         self.data_rigging = self.make_data_rigging(rigging_params)
         self.data_SKl = self.make_data_skl(skl_params)
+        self.data_other_rigging = self.make_data_other_rigging(other_rigging_params)
         SKL_results = [skl_params["skl1"],
                        skl_params["skl2"],
                        skl_params["skl3"],
@@ -74,7 +76,8 @@ class communicater_calculations:
                                      _Calc_factors,
                                      _Calc_load_dis,
                                      self.data_general["LW"],
-                                     SKL_results)
+                                     SKL_results,
+                                     self.data_other_rigging)
         _Calc_crane = Calc_crane(self.data_cranes,
                                  _Calc_factors,
                                  _Calc_load_dis,
@@ -87,6 +90,7 @@ class communicater_calculations:
         self.factors = _Calc_factors.get_general_factors
         self.COG_shift = _Calc_load_dis.get_max_cog_shifts
         self.Rigging_checks = _Calc_rigging.get_rigging_calc_total
+        self.Rigging_checks_other= _Calc_rigging.get_rigging_other_equipment
         self.Crane_checks = _Calc_crane.get_crane_results
     def make_data_skl(self,params):
         Data_SKl ={}
@@ -347,6 +351,40 @@ class communicater_calculations:
             
         return Data_crane
 
+    def make_data_other_rigging(self, params):
+        Data_other_rigging = []
+        dynamic_array = params.Checks_other
+        id_list = list(df_rigging["Other"].keys())
+        for ans in dynamic_array:
+            print(ans)
+            row={}
+            row["name"] = ans["name"]
+            id=ans["id_number"]
+            row["id_number"] = id
+            if id in id_list:
+                info = df_rigging["Other"][id]
+                row["Type"]=info["Type"]
+                row["WLL"]=info["WLL"]
+                row["Weight"]=info["Weight"]
+            else: 
+                row["Type"]="Unknown"
+                row["WLL"]= ans["WLL"]
+                row["Weight"]="Unkown"
+
+
+
+
+            row["id_number"]=id
+
+            row["Points"]=ans["Points"]
+            row["SKL"] = ["ans", 0,0]
+            row["SKL"][0] = ans["SKl"]
+            row["SKL"][1]= ans["SKl_value"]
+            Data_other_rigging.append(row)
+        print(Data_other_rigging)
+        return Data_other_rigging
+
+
     @ property
     def get_data_SKL(self):
         return self.data_SKl
@@ -381,6 +419,10 @@ class communicater_calculations:
     @property
     def get_rigging_checks(self):
         return self.Rigging_checks
+    
+    @property 
+    def get_rigging_checks_other(self):
+        return self.Rigging_checks_other
 
     @property 
     def get_crane_checks(self):

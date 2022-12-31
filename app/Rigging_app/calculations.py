@@ -2269,14 +2269,15 @@ class Calc_rigging:
                 _Calc_factors,
                 _Calc_load_dis,
                 weight,
-                SKL_results):
+                SKL_results,
+                Data_rigging_other):
         
         # Getting values from other calc classes 
 
         self._Calc_load_dis=_Calc_load_dis
         general_factors = _Calc_factors.get_general_factors
         self.TEF_factors = general_factors["TEF"]
-
+        
 
 
         # Factors 
@@ -2294,7 +2295,9 @@ class Calc_rigging:
         # Stap 1 bepalen FDRL 
         FDRL=weight*WCF*DAF*YAW
         
-        
+        self.checks_other_equipment(Data_rigging_other,
+                                    FDRL,
+                                    SKL_results)
         self.Rigging_calc_total={}
         
         for checks in Data_rigging:
@@ -2410,38 +2413,32 @@ class Calc_rigging:
             self.Rigging_calc_total.update({Calc["Name"]:Calc})
 
     def checks_other_equipment(self,
-                               _Answers_other_rigging,
+                               Data_other_rigging,
                                FDRL,
-                               ):
+                               SKL_results):
 
-        for key, values in _Answers_other_rigging.items():
-            row={}
+        for values in Data_other_rigging:
+            row=values
             # Determine info equipment
-            row["Type"]=values["Type"]
-            row["id_number"]=values["id_number"]
-            row["Type"]=values["Type"]
-            row["Weight"]=values["Weight"]
-            row["WLL"]=values["WLL"]
-
-            #Determine factors
-            row["Points"]=values["Points"]
+            print(values)
             row["Ans_skl"]=values["SKL"]
-            row["COG"] = self.COG_shift_factor(values["Points"])
+            row["COG"] = self.COG_shift_factor(row["Points"])
             row["Perc"]=self.Load_lifting_point(row["Points"])
             row["TEF"]=self.TEF_factor(row["Points"])
-            if values["SKL"] == Fact_text["SKL"][1]:
-                row["SKL"] = values["SKl_values"]
+            if row["SKL"][0] != Fact_text["SKL"][3]:
+                row["SKL"][2] = factors_no_calculations("SKL",row["SKL"][0])
             else:
-                row["SKL"] = factors_no_calculations("SKL",values["SKL"])
+                row["SKL"][2] = SKL_results[int(row["SKL"][1])-1]
             # The maxixum dynamic rigging load 
             row["FDRL"]=FDRL
             row["MDRL"]=np.prod([FDRL,
                                  row["COG"],
                                  row["TEF"],
                                  row["Perc"],
-                                 row["SKL"]])
-            row["Uc"]=row["MDRL"]/row["WLL"]
-            self.Rigging_other_calc_total.update({key:row})
+                                 row["SKL"][2]])
+            print(row["MDRL"])
+            row["Uc"]=row["MDRL"]/float(row["WLL"])
+            self.Rigging_other_calc_total.update({row['name']:row})
 
 
     def TEF_factor(self,points):

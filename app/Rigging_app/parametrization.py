@@ -229,6 +229,26 @@ class Parametrization(Parametrization):
     tab_3.section_1.Rigging_data.Table_connecting_points.dia=NumberField("Diameter",suffix='mm')
     tab_3.section_1.Rigging_data.Table_connecting_points.SWL=NumberField("SWL",suffix='t')
 
+    # Checks other rigging equipment 
+    tab_3.section_2=Section("Other equipment")
+    tab_3.section_2.Checks_other=DynamicArray("Checks equipment")
+    tab_3.section_2.Checks_other.name=TextField("What needs to be checked",flex=60,default="Lifting beam")
+    tab_3.section_2.Checks_other.lb1=LineBreak()
+    tab_3.section_2.Checks_other.id_number=TextField("Id number of equipment", default="Type id number")
+    tab_3.section_2.Checks_other.WLL=NumberField("WLL lift equipment", default="1", suffix="t",description="Only when id number is not in database")
+                                                              
+    tab_3.section_2.Checks_other.lb2=LineBreak()
+    tab_3.section_2.Checks_other.Points=MultiSelectField("Which points are connected to equipment",
+                                        options=get_point_options,
+                                        flex=60)
+    tab_3.section_2.Checks_other.lb2=LineBreak()
+    tab_3.section_2.Checks_other.SKl=AutocompleteField("Skew load factor",
+                                        options=Fact_text["SKL"],
+                                        default=Fact_text["SKL"][0],
+                                        flex=60)
+    tab_3.section_2.Checks_other.SKl_value=AutocompleteField("Which skew load factor is it?",
+                                        options=["1","2","3","4"],default="1",
+                                        description="Fill in if an analysis has been done")
 
     # Tab_4: Crane
     tab_4=Tab("Crane")
@@ -262,3 +282,6 @@ class Parametrization(Parametrization):
     tab_4.section_3.table_crane2.Capacity=NumberField("Capacity")
     tab_4.section_3.table_crane2.offlead=NumberField("Offlead")
     tab_4.section_3.table_crane2.RW=NumberField("Rigging weight")
+
+
+    
