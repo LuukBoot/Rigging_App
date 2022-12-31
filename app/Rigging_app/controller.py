@@ -1,19 +1,32 @@
 from viktor import ViktorController
-from viktor.result import SetParamsResult
+from viktor.result import SetParamsResult, DownloadResult
 from viktor.views import  PlotlyView, PlotlyResult, DataGroup, \
     DataItem, DataResult, DataView,PlotlyAndDataView,SVGView, \
         SVGAndDataView,SVGAndDataResult,SVGResult,Label,GeometryAndDataView,\
             GeometryAndDataResult,PlotlyAndDataResult
 from .calculations import Calc_SKL
 import numpy as np
-from .model import communicater_calculations
+from .model import communicater_calculations, Make_components
 from .parametrization import Parametrization
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-
+from pathlib import Path 
+from viktor.external.word import WordFileTag,render_word_file, WordFileImage
 class Main_Controller(ViktorController):
     label = 'Rigging Checks'
     parametrization = Parametrization
+
+    def word_document_download(self,params,**kwargs):
+        data = communicater_calculations(params)
+        components = Make_components(data,params.tab_5)
+        # Getting pathfile of word_document_template
+        Word_template_File = Path(__file__).parent
+        Word_template_File_path = Word_template_File.parent / "Data_output/Word_template.docx"
+        with open(Word_template_File_path,"rb") as template:
+            word_file_total=render_word_file(template,components)
+
+        return DownloadResult(word_file_total, 'test.docx')    
+
     def skew_load_factor(self,params,**kwargs):
         data = communicater_calculations(params)
 

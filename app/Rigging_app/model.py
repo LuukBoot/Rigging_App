@@ -4,8 +4,11 @@ from .calculations import Calc_COG_env, \
         distance_points_3d,Calc_crane, Calc_TEF_factor
 from .Default_inputs import df_rigging
 from viktor.errors import UserError
+from viktor.external.word import render_word_file, WordFileImage
+from viktor.external.word import WordFileTag as Tag
 
 class communicater_calculations: 
+
     def __init__(self,params,**kwargs):
         # Getting the params:
         self.point_names=["A","B","C","D"]
@@ -439,3 +442,20 @@ class communicater_calculations:
     @ property 
     def get_angles(self):
         return self.TEF_angles
+
+
+def Make_components(data,params_tab5):
+    point_names = ["A","B","C","D"]
+    comp = []
+
+    # Cover sheet 
+    comp.append(Tag("Name",params_tab5["name"]))
+    comp.append(Tag("checked",params_tab5["name_checked"]))
+    comp.append(Tag("Client_name",params_tab5["name_client"]))
+    comp.append(Tag("project_no",params_tab5["project_number"]))
+    comp.append(Tag("show_value",True))
+
+
+    return comp
+
+

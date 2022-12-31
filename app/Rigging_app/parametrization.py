@@ -296,5 +296,5 @@ class Parametrization(Parametrization):
     tab_5.lb4=LineBreak()
     tab_5.files = MultiFileField('Upload drawings ', file_types=['.png', '.jpg', '.jpeg'], max_size=5_000_000)
     tab_5.lb5=LineBreak()
-    tab_5.button= DownloadButton('Download word file', method='perform_word_document_download')
+    tab_5.button= DownloadButton('Download word file', method='word_document_download')
     
