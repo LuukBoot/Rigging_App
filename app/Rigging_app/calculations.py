@@ -2236,6 +2236,7 @@ class Calc_factors:
         i=1
         for row in data_SSF_factor:
             ssf_factors = {}
+            
             ssf_factors["Consequence_factor"] = row["Consequence_factor"]
             ssf_factors["Lift_factor"] = row["Lift_factor"]
 
@@ -2255,6 +2256,8 @@ class Calc_factors:
                 SSF = 2.3 
             txt = "SSF"+str(i)
             self.general_factors[txt] = SSF
+            ssf_factors["sling"] = txt
+            ssf_factors["SSF"] = SSF
             self.SSF_factors_total.append(ssf_factors)
             i +=1
 

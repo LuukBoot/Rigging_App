@@ -101,11 +101,13 @@ class communicater_calculations:
         self.Load_dis_t = _Calc_load_dis.get_load_dis_tons
         self.COG_shift_total = _Calc_load_dis.get_cog_shifts_total 
         self.factors = _Calc_factors.get_general_factors
+        self.SSF_factors = _Calc_factors.get_SSF_factors_total 
         self.COG_shift = _Calc_load_dis.get_max_cog_shifts
         self.Rigging_checks = _Calc_rigging.get_rigging_calc_total
         self.Rigging_checks_other= _Calc_rigging.get_rigging_other_equipment
         self.Crane_checks = _Calc_crane.get_crane_results
         self.TEF_angles = _Calc_TEF_factor.get_angles
+        #self.TEF_checks = _Calc_TEF_factor.get_checks
 
     def make_data_skl(self,params):
         Data_SKl ={}
@@ -451,6 +453,10 @@ class communicater_calculations:
     def get_cog_shift_calc_total(self):
         return self.COG_shift_total
 
+    @ property 
+    def get_SSF_factors_total(self):
+        return self.SSF_factors
+
 def Make_components(data,params_tab5):
     point_names = ["A","B","C","D"]
     comp = []
@@ -520,6 +526,52 @@ def Make_components(data,params_tab5):
             table_cog_shift_factor_total.append(row)
         i = i+1
     comp.append(Tag("COG_shift_calc_total",table_cog_shift_factor_total))
+
+    # Chapter 4: Factors 
+    # Import data 
+    data_factors = data.get_data_factors
+    factors = data.get_factors
+    SSF_factors_total = data.get_SSF_factors_total
+        #Chapter 4.1: factor weight continency factor
+    comp.append(Tag("ans_WCF",data_factors["WCF"]))
+    comp.append(Tag("WCF",factors["WCF"]))
+
+    # Chapter 4.2: DAF
+    comp.append(Tag("ans_DAF",data_factors["DAF"]))
+    comp.append(Tag("DAF",factors["DAF"]))
+
+    #Chapter 4.3.1: COG shift crane
+    if factors["COGCrane"]>1:
+        comp.append(Tag("ans_COGCrane","multiple"))
+    else:
+        comp.append(Tag("ans_COGCrane","one"))
+    comp.append(Tag("COG_crane",factors["COGCrane"]))
+    #Chapter 4.3.2: COG shift rigging 
+    table_cog_shift_factor=[]
+    for i in range(N_lifts):
+        table_cog_shift_factor.append({"point":point_names[i],
+                                        "COG_shift":factors["COG_envelope"][i]})
+
+    comp.append(Tag("ans_COG",data_factors["COG_envelope"]))
+    comp.append(Tag("COG_shift_rigging",table_cog_shift_factor))
+    # Chapter 4.4: tilt factor 
+    # Moet nog gedaan worden 
+
+
+
+
+    #Chapter 4.5: COG YAW
+    if factors["YAW"]>1:
+        comp.append(Tag("ans_YAW","multiple"))
+    else:
+        comp.append(Tag("ans_YAW","one"))
+    comp.append(Tag("YAW",factors["YAW"]))
+
+    #Chapter 4.7
+    slings_safety_factors=[]
+    print(SSF_factors_total)
+    i=1 
+    comp.append(Tag("paragraphs1",SSF_factors_total))
 
 
     return comp
