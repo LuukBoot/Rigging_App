@@ -83,7 +83,7 @@ class Main_Controller(ViktorController):
         n_ssf_factors = sum('SSF' in s for s in list(factors.keys())) 
         print(n_ssf_factors)
         for key, values in data_factors.items():
-            if key!="COG_envelope" and key!="TEF":
+            if key!="COG_envelope" and key!="TEF" and key!= "SKL_analysis":
                 df_table_2[0].append(key)
                 df_table_2[1].append(values)
                 df_table_2[2].append(factors[key])
