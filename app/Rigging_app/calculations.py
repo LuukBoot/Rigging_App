@@ -1441,6 +1441,8 @@ class Calc_SKL:
         self.steps = 1000  # Amount of steps that the loop goes through
         self.max_skew_load_factor = [0, 0, 0, 0]
 
+        # Results skew load fac
+        Results_skl = []
         # Making lists for al 16 options
         list_loop = {"Length_slings": [],
                      "Short_long_slings": []}
@@ -1486,6 +1488,10 @@ class Calc_SKL:
         self.Checks_SKL["Results_normal_length"] = self.loop_skew_load(Data_SKL["Lslings"])
         F_slings_start=self.Checks_SKL["Results_normal_length"]["F_slings_total"]                                          
 
+        self.Checks_SKL["Results_normal_length"]["sling"] =" All normal length"
+        self.Checks_SKL["Results_normal_length"]["Short_long_slings"] = [1,1,1,1]
+        self.Checks_SKL["Results_normal_length"]["SKL_factor"] = "N.V.T"
+        Results_skl.append(self.Checks_SKL["Results_normal_length"])
 
         # Loop through all 16 options
         for option_sling_short_long in options_list_slings_short_long:
@@ -1527,7 +1533,7 @@ class Calc_SKL:
 
         # Determine max skew load factor and max/min roll pitch angles
         # Determine also on which index the max sling force is 
-        Results_skl = []
+        #Results_skl = []
         for i in range(4):
             # Determine max force of each sling
             max_F_sling = max(F_slings_list_total[i])
@@ -1536,12 +1542,15 @@ class Calc_SKL:
             row ["sling"] = "Sling"+str(i+1)
             for key, values in list_loop.items():
                 row[key] = values[index]
-            Results_skl.append(row)
+            
             
 
             SKl_factor=max_F_sling/F_slings_start[i]
             self.Checks_SKL["SKL_factor"].append(SKl_factor)
-            self.max_skew_load_factor[i] = SKl_factor 
+            self.max_skew_load_factor[i] = SKl_factor
+            row["SKL_factor"] = SKl_factor
+            Results_skl.append(row) 
+        
         df_2_skl = pd.DataFrame.from_dict(Results_skl) 
         df_2_skl.to_csv (Results_SKL_File_Path, index = False, header=True)
         
@@ -2214,7 +2223,7 @@ class Calc_factors:
         self.general_factors={}
         # WCF/COGcrane/YAW factors determined
         for key,values in data_general_factor.items():
-            if key !="DAF" and key!="TEF" and key!="COG_envelope":
+            if key !="DAF" and key!="TEF" and key!="COG_envelope" and key != "SKL_analysis":
                 self.general_factors[key]=factors_no_calculations(key,values)
 
         # COG shift factor

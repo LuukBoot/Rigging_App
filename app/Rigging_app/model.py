@@ -2,13 +2,14 @@
 from .calculations import Calc_COG_env, \
     Calc_load_dis,Calc_factors,Calc_rigging,Calc_SKL,\
         distance_points_3d,Calc_crane, Calc_TEF_factor
-from .Default_inputs import df_rigging
+from .Default_inputs import df_rigging, Fact_text
 from viktor.errors import UserError
 from viktor.external.word import render_word_file, WordFileImage
 from viktor.external.word import WordFileTag as Tag
 import matplotlib.pyplot as plt
 from pathlib import Path 
-
+import numpy as np 
+import csv
 class communicater_calculations: 
 
     def __init__(self,params,**kwargs):
@@ -42,7 +43,7 @@ class communicater_calculations:
         self.data_SSF_factors = self.make_data_SSF_factor(
                                                 SSF_params)
         self.data_general_factor = self.make_data_general_factor(
-                                                general_factor_params)
+                                                general_factor_params,params["ans_SKL_analysis"])
         self.data_rigging = self.make_data_rigging(rigging_params)
         self.data_SKl = self.make_data_skl(skl_params)
         self.data_other_rigging = self.make_data_other_rigging(other_rigging_params)
@@ -249,7 +250,8 @@ class communicater_calculations:
             Data_rigging.append(row)
         return Data_rigging
 
-    def make_data_general_factor(self,params):
+    def make_data_general_factor(self,params,SKL_bool):
+
         Data_general_factor = {}
         keys = ["WCF", "COGCrane", "DAF","COG_envelope","YAW"]
         for key in keys:
@@ -267,7 +269,7 @@ class communicater_calculations:
         else:
             Data_general_factor["TEF"][1] = 0
         #print(Data_general_factor)
-        
+        Data_general_factor["SKL_analysis"] = SKL_bool
         return Data_general_factor
 
     def make_data_general(self,params):
@@ -558,8 +560,6 @@ def Make_components(data,params_tab5):
     # Moet nog gedaan worden 
 
 
-
-
     #Chapter 4.5: COG YAW
     if factors["YAW"]>1:
         comp.append(Tag("ans_YAW","multiple"))
@@ -568,14 +568,296 @@ def Make_components(data,params_tab5):
     comp.append(Tag("YAW",factors["YAW"]))
 
     #Chapter 4.7
-    slings_safety_factors=[]
-    print(SSF_factors_total)
-    i=1 
     comp.append(Tag("paragraphs1",SSF_factors_total))
 
+    # Chapter 5
+    # import data
+    Riggin_checks=data.get_rigging_checks
+    
+    #print(Riggin_checks)
+    rigging_checks_factors = []
+    for name,factors in Riggin_checks.items():
+        row={}
+        #print(factors)
+        #print(factors.keys())
+        row["rigging_name"]=name  # Header
+        # Equipment used
+        row["id_number"]=factors["sling"][0]
+        row["SWL_sling"]=round(factors["sling"][2],1)
+        row["Sling_dia"]=factors["sling"][3]
+        #row["Length"]=factors["sling"][0]
+        row["Type"]=factors["sling"][1]
+        #Shackles/hook
+        row["u_type"]=factors["Connection_upper"][0]
+        row["l_type"]=factors["Connection_lower"][0]
+        row["u_swl"]=factors["Connection_upper"][2]
+        row["l_swl"]=factors["Connection_lower"][2]
+        row["u_d"]=factors["Connection_upper"][1]
+        row["l_d"]=factors["Connection_lower"][1]
+        # Factors used
+        row['Ans_skl']=factors["SKL"][0]
+        if row['Ans_skl']==Fact_text["SKL"][3]:
+            sling="sling"+str(str(factors["SKL"][1]))
+            row['SKL_source']="Appendix C(Result "+sling+")"
+        else:
+            row['SKL_source']="Ref 2.1 16.3"
+
+        row["ANS_SLDF"]=factors["SLDF_ans"]
+        row["Ans_TRF"]=factors["TRF"]
+        row["SKL"]=factors["SKL"][2]
+        row["SLDF"]=factors["SLDF"]
+        row["TRF"]=factors["TRF"]
+        # input parametres 
+        row["material"]=factors["Material"]
+        row["points"]=factors["Points"]
+        row["RWP"]=factors["RWP"]
+        row["angle_1"]=factors["Angle_1"]
+        row["angle_2"]=factors["Angle_2"]
+        row["N_parts"]=factors["sling"][4]
+        row["Diameter_D"]=factors["sling"][3]# Diameter grommet/sling
+        row["Diameter_d"]=min([factors["Connection_lower"][1],factors["Connection_upper"][1]])
+        # Calculations
+        row["perc"]=round(factors["perc"]*100,2)
+        row["COG"]=factors["COG"]
+
+        row["VLLP"]=round(factors["VLLP"],2)
+        row["IFUS"]=round(factors["IFUS"],2)
+        row["SLDF"]=round(factors["SLDF"],2)
+        row["IFUP"]=round(factors["IFUP"],2)
+        row["BRF"]=round(factors["BRF"],2)
+
+        # Unity check sling upper
+        
+        row["SWL_req"]=round(factors["sling"][-2],2)
+        row["UC_sling"]=round(factors["sling"][-1],2)
+        
+        # Unity check upper shackle 
+        if factors["Connection_upper"][-1] != "N.V.T":
+            row["u_show_UC_shackle"]="yes"
+            row["u_SWL_req_shackle"]=round(factors["Connection_upper"][-2],2)
+            row["u_UC"]=round(factors["Connection_upper"][-1],2)
+        else:
+            row["u_show_UC_shackle"]="no"
+        
+        # unity check lower shcakle:
+        if factors["Connection_lower"][-1] != "N.V.T":
+            print("Het werkt")
+            row["l_show_UC_shackle"]="yes"
+            row["l_SWL_req_shackle"]=round(factors["Connection_lower"][-2],2)
+            row["l_UC"]=round(factors["Connection_lower"][-1],2)
+        else:
+            row["u_show_UC_shackle"]="no"
+
+        rigging_checks_factors.append(row)
+    comp.append(Tag("paragraphs_rigging",rigging_checks_factors))
+
+    # Chapter 6: Rigging check other 
+    # Import data 
+    Rigging_other_checks=data.get_rigging_checks_other
+    rigging_other_equipment = []
+    for key, values in Rigging_other_checks.items():
+        row={}
+        row["name"]=key
+        for name, value in values.items():
+            
+            if isinstance(value,str)== False and isinstance(value,list)==False :
+                value=round(value,2)
+            row[name]=value
+        row['SKL'] = values["SKL"][-1]
+        row['Ans_skl']=values["SKL"][0]
+        if row['Ans_skl']==Fact_text["SKL"][3]:
+            sling="sling"+str(str(values["SKL"][1]))
+            row['SKL_source']="Appendix C(Result "+sling+")"
+        else:
+            row['SKL_source']="Ref 2.1 16.3"
+        
+        rigging_other_equipment.append(row)
+    comp.append(Tag("paragraphs_rigging_other",rigging_other_equipment))
+
+    # Chapter 7: Crane checks 
+    # Chapter 7.2 Crane1
+        
+    crane_checks=data.get_crane_checks
+    #print(crane_checks)
+    name_cranes=list(crane_checks.keys())
+    
+    comp.append(Tag("Crane_name1",name_cranes[0]))
+    comp.append(Tag("DDF_1",crane_checks[name_cranes[0]]["DDF"]))
+    crane1_checks_info=[]
+    for info, values in crane_checks[name_cranes[0]].items():
+        row={}
+        if info != "DDF":
+            row['Hoist']=info
+            for name, value in values.items():
+                if isinstance(value,str)== False and isinstance(value,list)==False :
+                    value=round(value,2)
+                row[name]=value
+            crane1_checks_info.append(row)
+    
+    comp.append(Tag("paragraphs_crane1_checks",crane1_checks_info))
+        
+    # Chapter 7.3 Checks crane 2 
+    # Only when there is an crane 2 
+    crane2_checks_info=[]
+    if len(name_cranes)==2:
+        comp.append(Tag("check_crane2_show","yes"))
+        comp.append(Tag("Crane_name2",name_cranes[1]))
+        comp.append(Tag("DDF_2",crane_checks[name_cranes[1]]["DDF"]))
+        crane_checks_info=[]
+        for info, values in crane_checks[name_cranes[1]].items():
+            row={}
+            if info != "DDF":
+                row['Hoist']=info
+                for name, value in values.items():
+                    if isinstance(value,str)== False and isinstance(value,list)==False :
+                        value=round(value,2)
+                    row[name]=value
+                crane2_checks_info.append(row)
+        
+        comp.append(Tag("paragraphs_crane2_checks",crane_checks_info))
+    else:
+        comp.append(Tag("check_crane2_show","yes"))
+
+    # Chapter appendix B SKL Factor
+    # import data
+    # Import data from excel sheet 
+    Skew_load_file = Path(__file__).parent
+    Skew_load_file_Path = Skew_load_file.parent / "Data_output/Results_SKL.csv"
+    with open(Skew_load_file_Path) as f:
+        reader = list(csv.DictReader(f))
+    Data_SkL = data.get_data_SKL
+    
+    Results_SKL_total = reader
+    F_load_total = Data_general_lifting["LW"] *1000 *9.81
+    #print(data_factors)
+    #print(Data_SkL)
+    #print(Results_SKL)
+    if data_factors["SKL_analysis"]==True:
+        comp.append(Tag("skl_show","yes"))
+        
+        # Table input parameters lift points:
+        table_lift_points_skl=[]
+
+        for i in range(4):
+            table_lift_points_skl.append({"point":point_names[i],
+                                            "x":Data_SkL["Lift_points"][i][0],
+                                            "y":Data_SkL["Lift_points"][i][1],
+                                            "z":Data_SkL["Lift_points"][i][2],
+                                            "E":Data_SkL["Eslings"][i],
+                                            "D":Data_SkL["Dslings"][i]})
+        comp.append(Tag("table_lift_points_skl_analyse",table_lift_points_skl))
+        # Table input parameters start hook point
+        comp.append(Tag("x_hook_skl",Data_SkL["Hook_point"][0]))
+        comp.append(Tag("y_hook_skl",Data_SkL["Hook_point"][1]))
+        comp.append(Tag("z_hook_skl",Data_SkL["Hook_point"][2]))
+
+        # Chapter length normal slings 
+        # Results normal length sling 
+        Results_normal_length=Results_SKL_total[0]
+        print(Results_normal_length)
+        strain_sling = clean_up_data(Results_normal_length["Strain_slings"])
+        for i in range(4):
+            comp.append(Tag("L_slings_"+str(i+1),Data_SkL["Lslings"][i]))
+            Distance=distance_points_3d(Data_SkL["Hook_point"],Data_SkL["Lift_points"][i])
+            comp.append(Tag("Dis_"+str(i+1),round(Distance,2)))
+            comp.append(Tag("s_slings_"+str(i+1),round(strain_sling[i],1)))
+            
+                
+            # Tabel hook 
+        text_l=["x","y","z"]
+        Start_hook = clean_up_data(Results_normal_length["Start_hook"])
+        Hook_point = clean_up_data(Results_normal_length["Hook_point"])
+        for i in range(3):
+            comp.append(Tag("start_h_"+text_l[i],round(Start_hook[i],2)))
+            comp.append(Tag("end_h_"+text_l[i],round(Hook_point[i],2)))
+            comp.append(Tag("dis_h_"+text_l[i],round(Hook_point[i]-Start_hook[i],2)))
+        F_total_hook = clean_up_data(Results_normal_length["F_total_hook"])
+        # Tabel force hook
+        F_hook_x=F_total_hook[0]
+        F_hook_y=F_total_hook[1]
+        Perc_x=round((F_hook_x/F_load_total)*100,2)
+        Perc_y=round((F_hook_y/F_load_total)*100,2)
+        comp.append(Tag("Force_x_h",round(F_hook_x,2)))
+        comp.append(Tag("Force_y_h",round(F_hook_y,2)))
+        comp.append(Tag("F_load_total",F_load_total))
+        row["Force_x_h"]=round(F_total_hook[0],2)
+        row["Force_y_h"]=round(F_total_hook[1],1)
+        row["F_load_total"]=F_load_total
+        comp.append(Tag("perc_x_h",round(Perc_x,2)))
+        comp.append(Tag("perc_y_h",round(Perc_y,2)))
+
+        F_slings_total = clean_up_data(Results_normal_length["F_slings_total"])
+        Load_dis = clean_up_data(Results_normal_length["Load_dis"])  
+        for i in range(4):
+            comp.append(Tag("F_sling_"+str(i+1),round(F_slings_total[i],2)))
+            load_perc=Load_dis[i]
+            Fz=round(load_perc*F_load_total,0)
+            comp.append(Tag("Fz_sling_"+str(i+1),Fz))
+            comp.append(Tag("Load_dis_"+str(i+1),round(load_perc*100,2)))
+            
+
+        results_skl_checks= []
+        for i in range(4):
+
+            row={}
+            
+            Results_sling = Results_SKL_total[i+1]
+            row["Sling"]= "Sling " +str(i+1) 
+            print(Results_sling)
+            # Slings
+            Short_long_slings = clean_up_data(Results_sling["Short_long_slings"])
+            Length_slings = clean_up_data(Results_sling["Length_slings"])
+            print(Length_slings)
+            strain_sling = clean_up_data(Results_sling["Strain_slings"])
+            for j in range(1,5):
+                if Short_long_slings[j-1] == 0:
+                    row["short_"+str(j)] ="Short"
+                else: 
+                    row["short_"+str(j)] ="Long"
+
+                row["L_slings_"+str(j)]= round(float(Length_slings[j-1]),1)
+                row["s_slings_"+str(j)]= round(float(strain_sling[j-1]),1)
+                
+            # Tabel hook 
+            text_l=["x","y","z"]
+            Start_hook = clean_up_data(Results_sling["Start_hook"])
+            Hook_point = clean_up_data(Results_sling["Hook_point"])
+            for j in range(3):
+                row["start_h_"+text_l[j]]=round(Start_hook[j],2)
+                row["end_h_"+text_l[j]]=round(Hook_point[j],2)
+                row["dis_h_"+text_l[j]]=round(Hook_point[j]-Start_hook[j],2)
+            # Tabel force hook
+            F_total_hook = clean_up_data(Results_sling["F_total_hook"])
+
+            row["Force_x_h"]=round(F_total_hook[0],2)
+            row["Force_y_h"]=round(F_total_hook[1],1)
+            row["F_load_total"]=F_load_total
+            row["perc_x_h"]=round((F_total_hook[0]/F_load_total)*100,2)
+            row["perc_y_h"]=round((F_total_hook[0]/F_load_total)*100,2)
+            # Table force slings 
+            F_slings_total = clean_up_data(Results_sling["F_slings_total"])
+            Load_dis = clean_up_data(Results_sling["Load_dis"])           
+            for j in range(1,5):
+                
+                row["F_sling_"+str(j)]=round(F_slings_total[j-1],0)
+                row["Fz_sling_"+str(j)]=round(F_load_total*Load_dis[j-1],1)
+                row["Load_dis_"+str(j)]=round(Load_dis[j-1]*100,2)
+            row["SKL"]=round(float(Results_sling["SKL_factor"]),2)
+            results_skl_checks.append(row)
+        comp.append(Tag("paragraphs_skl_appendix",results_skl_checks))
+    else:
+        comp.append(Tag("skl_show","no"))
 
     return comp
 
+def clean_up_data(data):
+    data = data.replace("[","")
+    data = data.replace("]","")
+    data = data.split(",")
+    data_clean = []
+    for value in data:
+        data_clean.append(float(value))
+    return data_clean
 
 def make_top_view(params,N_lifts):
         

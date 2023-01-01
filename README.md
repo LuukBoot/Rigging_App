@@ -94,7 +94,8 @@ Data_general_factor={"WCF":str(answer),
                         "COG_envelope":str(answer),
                         "DAF":str(answer),
                         "YAW":str(answer),
-                        "TEF":[float(Roll angle), float(Pitch angle)]}
+                        "TEF":[float(Roll angle), float(Pitch angle)],
+                        "SKL_analysis": Bool}
 
 ```
 In section 2 the values for the sling safetry factor are entered, the params are:
