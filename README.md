@@ -28,7 +28,7 @@ Dit moet ik nog uitvogelen aan de hand van de documentatie van viktor
 <a name="usage"></a>
 
 ## How to use the project 
-Ik moet nog een handleiding maken, die komt hier te staan
+A pdf manual can be donwloaded in folder "Files_read_me"
 
 <a name="App"></a>
 
@@ -67,9 +67,9 @@ app/
 
 ### Workflowdiagram 
 In this chapter the workflow diagram is described, see below the the total workflow diagram
-![This is a image](/Images_read_me/Workflow.jpg)
+![This is a image](/Files_read_me/Workflow.jpg)
 
-In the upper part of the figure, the front end of the app is shown. The front end of the app consists of 5 different tabs, each tab has a different kind of input fields and buttons. The parameters that are filled are explained in more detail in the chapter "Input".  On the left side, the databases are shown, Both these databases are excel sheets and the data in these files can easily be changed. With the help of the module openpyxl, the data from the excel sheet is transformed to useful data, in the default_inputs file
+In the upper part of the fiure, the front end of the app is shown. The front end of the app consists of 5 different tabs, each tab has a different kind of input fields and buttons. The parameters that are filled are explained in more detail in the chapter "Input".  On the left side, the databases are shown, Both these databases are excel sheets and the data in these files can easily be changed. With the help of the module openpyxl, the data from the excel sheet is transformed to useful data, in the default_inputs file
 
 <br/><br/>
 All the params and data from the excel sheets are passed to the communication class, in the module file. The first thing the class does is change the params into useful data, in which way it is stored can be seen in the next chapter. When all the data is transformed, the calculations are done, These are:
@@ -250,7 +250,7 @@ Data_skl={"Lift_points": [nx[float(point_x),float(point_y),float(point_z)]],
 ```
 
 ### Flowchart 
-![This is a image](/Images_read_me/Flowchart_skl.jpg)
+![This is a image](/Files_read_me/Flowchart_skl.jpg)
 
 1. Determine the stiffness constant of the slings 
 2. Determine the length of the slings: 
@@ -269,7 +269,7 @@ Data_skl={"Lift_points": [nx[float(point_x),float(point_y),float(point_z)]],
 The calculatinos to determine what the force in the slings are and the displacment of the hook are described in more detail in: Matrix Analysis of structure, second edition
 ### Determine start hook point 
 Because of the different lengths, the start of the hook point is different than the original hook point.  See below the flowchart, there has been an assumption made that the slings can not have any strain( no forces), when the forces in the hook are not equal to zero. This is the case when there is one rope tight, and the rope is not directly under the hook. The second case is when there are two tight and the hook lays not on the diagonal of the two liftings points.
-![This is a image](/Images_read_me/Flowchart_start_hook_point.jpg)
+![This is a image](/Files_read_me/Flowchart_start_hook_point.jpg)
 
 1. Determine the z-positon of the hook, this point is the first point when a cable is tight, it is determined with the following code, see code snippet below: 
 ```

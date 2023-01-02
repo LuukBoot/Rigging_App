@@ -170,10 +170,10 @@ class Parametrization(Parametrization):
     tab_3.section_1.Rigging_data = DynamicArray("Rigging",min = 1)
     tab_3.section_1.Rigging_data.RiggingPoint = TextField("Rigging point",
                                             default = "Name of this point")
-    tab_3.section_1.Rigging_data.rigging_material = AutocompleteField("",
+    tab_3.section_1.Rigging_data.rigging_material = AutocompleteField("Material of sling/grommet",
                                             options = ["Steel","Fibre"],
                                             default = "Steel")
-    tab_3.section_1.Rigging_data.Points = MultiSelectField(" ",
+    tab_3.section_1.Rigging_data.Points = MultiSelectField("Points connected",
                                         options = get_point_options,
                                         )
     tab_3.section_1.Rigging_data.lb1 = LineBreak()
