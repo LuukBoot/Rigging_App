@@ -48,27 +48,32 @@ class Parametrization(Parametrization):
     tab_2.section_1.WCF = AutocompleteField("Weight of object",
                             options =  Fact_text["WCF"],
                             default =  Fact_text["WCF"][0],
-                            flex = 60)
+                            flex = 60,
+                            description="See paragraph DNV: 16.2.2")
     tab_2.section_1.lb1 = LineBreak()
     tab_2.section_1.COGCrane = AutocompleteField("COG shift crane",
                             options =  Fact_text["COGCrane"],
                             default =  Fact_text["COGCrane"][0],
-                            flex = 60)
+                            flex = 60,
+                            description="See paragraph DNV: 5.6.2.3")
     tab_2.section_1.lb2 = LineBreak()
     tab_2.section_1.DAF = AutocompleteField("Dynamic amplification factor",
                             options =  Fact_text["DAF"],
                             default =  Fact_text["DAF"][0],
-                            flex = 60)
+                            flex = 60,
+                            description="See paragraph DNV: 16.2.5")
     tab_2.section_1.lb3 = LineBreak()
     tab_2.section_1.YAW = AutocompleteField("YAW effect factor",
                             options =  Fact_text["YAW"],
                             default =  Fact_text["YAW"][0],
-                            flex = 60)
+                            flex = 60,
+                            description="See paragraph DNV: 16.2.4")
     tab_2.section_1.lb4 = LineBreak()
     tab_2.section_1.COG_envelope = AutocompleteField("COG envelope",
                         options =  Fact_text["COG_envelope"],
                         default =  Fact_text["COG_envelope"][0],
-                            flex=60)
+                            flex=60,
+                            description="See paragraph DNV: 5.6.2.3")
 
     tab_2.section_1.lb5 = LineBreak()
 
