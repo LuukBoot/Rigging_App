@@ -252,24 +252,40 @@ Data_skl={"Lift_points": [nx[float(point_x),float(point_y),float(point_z)]],
 ### Flowchart 
 ![This is a image](/Files_read_me/Flowchart_skl.jpg)
 
-1. Determine the stiffness constant of the slings 
-2. Determine the length of the slings: 
-    The length of the slings depends on the in-use length of the slings, and if the slings are longer than the measured length because of the tolerance or are shorter than the measured length. In total there are 16 different combinations possible for the slings length, and the code loops through all of them.
-3. Determine the start hook point, because of the different lengths of the slings, the start of the hook point is different from the original. See the next chapter for a detailed explanation of the start of the hook point.
-4. Determine the number of slack slings, this is based on the distance between the lift points and the length of the slings with tolerance. 
-5. Determine Fx, Fy, and Fz forces in hook, Fx and Fy are equal to zero. The Fz force depends on which iteration the "Loop skew load is"
-6. When there are 2 slings tight, this means that the hook is on the diagonal line of those two points. So the forces in the slings/ displacement of the hook can be determined using the 2d stiffness method. When there are 3/4 slings tight, the force in the slings/ displacement of the hook can be solved using the 3d stiffness method.
-7. Determine the new position, based on the displacement of the hook that was calculated in the last step
-8. Determine the total force in slings/ hook, based on the force in slings that was calculated in the last step
-9. Checking if "Loop skew" has done all its steps, if this is the case the total force in the z-direction is equal to the total force of the lifting object. If it is not the case, steps 3,4,5,6,7, and 8 are done again, unit all steps have been completed.
-10. Store all the results in a dictionary
-11. Checking if "Loop options short/long slings" had done all its 16 different combinations, if this is not the case steps 3 t/m 10 will be done again.
+
+1. Determine the stiffness constant of the slings <br/>
+    The sitfness method is determined bases on the E-modulus, Core diameter and the effective work length
+2. Determine force in slings, with the effective work length <br/>
+    Determine the force in the slings, with the effective work length. It is determine used using step 4,5,6,7,8 and 9. It is possible that some cables are pulled sooner than other, due to the different effective work length. 
+    
+3. Determine length slings, with tolerance <br/>
+    Calculate the length of the slings based on the tolerance it is possible that the lenght of the sling is equal to 100,25% of the EWL or 99,75% of the EWL, in total there are 16 different options, that the code loop througs all.
+
+3. Determine the start hook point<br/>
+     Because of the different lengths of the slings, the start of the hook point is different from the original. See the next chapter for a detailed explanation of the start of the hook point.
+4. Determine the number of slack slings<br/> 
+    This is based on the distance between the lift points and the length of the slings with strain. 
+5. Determine Fx, Fy, and Fz forces in hook<br/>
+    Fx and Fy are equal to zero. The Fz force depends on which iteration the "Loop skew load is"
+7. Checking if there are more than 2 slings tight:
+    1. When there are 2 slings tight, this means that the hook is on the diagonal line of those two points. So the forces in the slings/ displacement of the hook can be determined using the 2d stiffness method.
+    2. When there are 3/4 slings tight, the force in the slings/ displacement of the hook can be solved using the 3d stiffness method.
+8. Results 2d/3d stifnes method
+    1. Determine the new position of the hook, bases on the displacment of the hook and the position of the hook in the last iteration 
+    2. Determine total force in slings
+    3. Determine total strain in slings 
+    4. Determine total force in hook, bases on the forces in slings and the angles of the slings
+9. Checking if the total load is greater than the the force in z-direction, if this not the case steps 5,6,7 and 8 are done again, until the total force in z-direction is equal to the force of the lifted object. When the force is greater or equal the results are stored in a dictionary.
+
+10. Checking if "Loop options short/long slings" had done all its 16 different combinations, if this is not the case steps 3 t/m 9 will be done again.
 12. Determine the max skew load factor of each sling. Also, determine what the displacement of the hook/force in slings was with the max skew load factor and store these in a CSV file
 
 The calculatinos to determine what the force in the slings are and the displacment of the hook are described in more detail in: Matrix Analysis of structure, second edition
+
+
 ### Determine start hook point 
 Because of the different lengths, the start of the hook point is different than the original hook point.  See below the flowchart, there has been an assumption made that the slings can not have any strain( no forces), when the forces in the hook are not equal to zero. This is the case when there is one rope tight, and the rope is not directly under the hook. The second case is when there are two tight and the hook lays not on the diagonal of the two liftings points.
-![This is a image](/Files_read_me/Flowchart_start_hook_point.jpg)
+![This is a image](/Files_read_me/Flowchart_sling_strak.jpg)
 
 1. Determine the z-positon of the hook, this point is the first point when a cable is tight, it is determined with the following code, see code snippet below: 
 ```
