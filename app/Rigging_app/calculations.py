@@ -226,8 +226,10 @@ def slack_slings(Lifting_points, Hook_point, Length_slings):
     for i in range(4):
         Distance = distance_points_3d(Lifting_points[i], Hook_point)
         if Distance > Length_slings[i]:
+            # SLing is tight
             Slings_slack[i] = 1
         else:
+            # Sling is slack
             Slings_slack[i] = 0
 
     return Slings_slack
@@ -435,23 +437,24 @@ def nonlinear_equation_solver(
     g = sym.Eq((x-lift_points[1][0])**2+(y-lift_points[1][1])**2, Constant_eq2)
     answers = sym.solve([f, g], (x, y))
     
-    # Bepalen welke antwoord het is van de twee moet nog beter worden 
-    # uitgewerkt
+    # Determine which answers it is from the two two answers
     verschil_totaal = [[], []]
     for points in answers:
         Hook_point[0] = points[0]
         Hook_point[1] = points[1]
+        # Determine the 3d angles of the lines
         angles_line1_new_point = angle_3d(lift_points[0], Hook_point)
         angles_line2_new_point = angle_3d(lift_points[1], Hook_point)
 
         verschil1 = 0
         verschil2 = 0
         for i in range(3):
+            # Adding the total verschil
             verschil1 = verschil1+(angles_line1_new_point[i]-angles_line1[i])
             verschil2 = verschil2+(angles_line2_new_point[i]-angles_line2[i])
         verschil_totaal[0].append(abs(verschil1))
         verschil_totaal[1].append(abs(verschil2))
-
+    # Determine which answers has the least differnce with the line
     min_value1 = min(verschil_totaal[0])
     min_index = verschil_totaal[0].index(min_value1)
     
@@ -503,6 +506,7 @@ def determine_height_hook_start(Lslings, Hook_point, Lifting_points):
         Z_hook_height = z_dist+Lifting_points[i][2]
 
         z_hook.append(Z_hook_height)
+    # Determine the minimal hook height
     Hook_point[2] = min(z_hook)+0.000001
 
     return Hook_point
