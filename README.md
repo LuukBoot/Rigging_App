@@ -250,6 +250,7 @@ Data_skl={"Lift_points": [nx[float(point_x),float(point_y),float(point_z)]],
 ```
 
 ### Flowchart 
+For a more detailed description see "EngineeringsModel_skl.pdf" in the folder "Files_read_me"
 ![This is a image](/Files_read_me/Flowchart_skl.jpg)
 
 
@@ -301,21 +302,30 @@ Because of the different lengths, the start of the hook point is different than 
         z_hook.append(Z_hook_height)
     Hook_point[2] = min(z_hook)+0.000001
 ```
-2. Determine the number of slack slings
-3. If there are 3 slack slings, the hook will move to the lifting point of the tight sling, until the hook is right above the lifting point. 
-    - First determine the x an y differnce between hook point and hook point(when hook is above lift point)
-    - Move the hook in very small steps to the end hook point
-    - Determine z-position hook( so that the length of the slings is constant)
-    - Determine the number of slack slings
-    - when there is no change in the number of slack slings, move do the loop again, otherwise go further in the flowchart.
-4. When there are two slings tight, the hook will move to the diagonal line of those two lifting points:
-    - First determine the length of the radius line, which the hook will follow, so that both the slings will have a constant length
-    - Determine the x,y,z coordinates of the intersection point with the radius line and the diagonal line 
-    - Determine the hook with the vertical and the radius line. 
-    - Change the hook of the radius line with the vertical in small steps until the radius line is perpendicular to the diagonal line.
-    - Check the number of slack slings
-    - If there are number of slack slings is not changed and the radius line is perpendicular to the diagonal line, the hook lays on the diagonal line and it is two point lift
-    - If there is one or two slack pulled tight it is a 3/ 4 points lift
+2. Determine the number of slack slings<br/> 
+    This is based on the distance between the lift points and the length of the slings with strain. 
+<br/><br/>
+
+#### One sling tight 
+The hook will move to the lifting point of the tight sling, until the hook is right above the lifting point.
+1. Determine the displacement vector and delta hook 
+2. Determine the new position of the hook 
+3. Determine the number of tight slings 
+4. If the number of tight slings is equal to 1, determine the new position of the hook otherwise break the loop.
+
+#### Two sling tight 
+When there are two slings tight, the hook will move to the diagonal line of those two lifting points:
+1. Radius line 
+    1. Determine the radius line(is the line which the hook will folow so that the two slings will have a constant length)
+    2. Determine the minimal angle of the radius line with the z-axes(ymin)
+    3. Determine the angle with the z-axes of the radius line
+2. Determine position hook
+3. Determine the number of tight slings 
+<br/> 
+If there are number of slack slings is not changed and the radius line is perpendicular to the diagonal line, the hook lays on the diagonal line and it is two point lift
+<br/> 
+If there is one or two slack pulled tight it is a 3/ 4 points lift
+
 
 
 
