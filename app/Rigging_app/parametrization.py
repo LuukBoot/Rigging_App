@@ -218,7 +218,7 @@ class Parametrization(Parametrization):
     tab_3.section_1.Rigging_data.Table_sling_grommet=Table("Data sling/grommet",
                                         default=Table_slings_grommets)
     tab_3.section_1.Rigging_data.Table_sling_grommet.ID_number=TextField("ID number")
-    tab_3.section_1.Rigging_data.Table_sling_grommet.Type=OptionField("Type",
+    tab_3.section_1.Rigging_data.Table_sling_grommet.type=OptionField("Type",
                                         options=["sling","grommet"])
     tab_3.section_1.Rigging_data.Table_sling_grommet.SWL = NumberField("SWL")
     tab_3.section_1.Rigging_data.Table_sling_grommet.D = NumberField("D")

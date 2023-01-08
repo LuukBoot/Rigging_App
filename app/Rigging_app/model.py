@@ -37,20 +37,24 @@ class communicater_calculations:
             tef_factor.append(1)
 
         # Getting data 
-        self.data_cranes = self.make_data_cranes(crane_params)
-        self.data_general = self.make_data_general(general_params)
+        try:
+            self.data_cranes = self.make_data_cranes(crane_params)
 
-        self.data_SSF_factors = self.make_data_SSF_factor(
-                                                SSF_params)
-        self.data_general_factor = self.make_data_general_factor(
-                                                general_factor_params,params["ans_SKL_analysis"])
-        self.data_rigging = self.make_data_rigging(rigging_params)
-        self.data_SKl = self.make_data_skl(skl_params)
-        self.data_other_rigging = self.make_data_other_rigging(other_rigging_params)
-        SKL_results = [skl_params["skl1"],
-                       skl_params["skl2"],
-                       skl_params["skl3"],
-                       skl_params["skl4"]]
+            self.data_general = self.make_data_general(general_params)
+            self.data_SSF_factors = self.make_data_SSF_factor(
+                                                    SSF_params)
+            self.data_general_factor = self.make_data_general_factor(
+                                                    general_factor_params,params["ans_SKL_analysis"])
+            self.data_rigging = self.make_data_rigging(rigging_params)
+            self.data_SKl = self.make_data_skl(skl_params)
+            self.data_other_rigging = self.make_data_other_rigging(other_rigging_params)
+            SKL_results = [skl_params["skl1"],
+                        skl_params["skl2"],
+                        skl_params["skl3"],
+                        skl_params["skl4"]]
+        except TypeError :
+            raise UserError("There has been filled a wrong type of number")
+
         #print(self.data_SKl)
         #print(self.data_rigging)
         # Print statements kan worden verwijdert
@@ -64,37 +68,56 @@ class communicater_calculations:
         # Calculations classes
         # Calculate COG envelope
         #print(self.data_general)
-        _Calc_COG_env = Calc_COG_env(self.data_general["Obj_geo"],
-                                         self.data_general["COG"])
-        # Calculating the load dis
-        _Calc_load_dis = Calc_load_dis(self.data_general["Lift_points"],
-                                      _Calc_COG_env,
-                                      self.data_general["COG"],
-                                      self.N_lifts,
-                                      self.data_general["LW"])
-        _Calc_TEF_factor = Calc_TEF_factor(self.data_general["Lift_points"],
-                                           self.data_general["COG"],
-                                           _Calc_COG_env,
-                                           self.N_lifts,
-                                           self.data_general_factor,
-                                           _Calc_load_dis,
-                                           )
-        _Calc_factors = Calc_factors(self.data_general_factor,
+
+
+        try:
+            _Calc_COG_env = Calc_COG_env(self.data_general["Obj_geo"],
+                                            self.data_general["COG"])
+
+            _Calc_load_dis = Calc_load_dis(self.data_general["Lift_points"],
+                            _Calc_COG_env,
+                            self.data_general["COG"],
+                            self.N_lifts,
+                            self.data_general["LW"])
+            _Calc_TEF_factor = Calc_TEF_factor(self.data_general["Lift_points"],
+                                        self.data_general["COG"],
+                                        _Calc_COG_env,
+                                        self.N_lifts,
+                                        self.data_general_factor,
+                                        _Calc_load_dis,
+                                        )
+            _Calc_factors = Calc_factors(self.data_general_factor,
                                     _Calc_load_dis,
                                     self.data_general["LW"],
                                     self.data_SSF_factors,
                                     self.N_lifts,
                                     _Calc_TEF_factor)
-        _Calc_rigging = Calc_rigging(self.data_rigging,
-                                     _Calc_factors,
-                                     _Calc_load_dis,
-                                     self.data_general["LW"],
-                                     SKL_results,
-                                     self.data_other_rigging)
+        except ZeroDivisionError:
+            raise UserError("Devided by zero, are all liftpoint coardinates, COG filled in correctly?")
+
+            
+        # Calculating the load dis
+
+
+        try:
+            _Calc_rigging = Calc_rigging(self.data_rigging,
+                                        _Calc_factors,
+                                        _Calc_load_dis,
+                                        self.data_general["LW"],
+                                        SKL_results,
+                                        self.data_other_rigging)
+        except TypeError:
+            raise UserError("Is the points connected and sling safety factor filled in correctly, at the rigging checks ?")
+        except ZeroDivisionError:
+            raise UserError("Devided by zero, are all parameters at rigging filled in correctly")
+        
         _Calc_crane = Calc_crane(self.data_cranes,
-                                 _Calc_factors,
-                                 _Calc_load_dis,
-                                 self.data_general["LW"])
+                                _Calc_factors,
+                                _Calc_load_dis,
+                                self.data_general["LW"])
+
+
+
 
 
         # Making attributes so it can be shared with the other method 
@@ -191,7 +214,7 @@ class communicater_calculations:
             if id_sling not in id_slings_list:
                 # it is not in the data base 
                 print("sling Is niet in data base")
-                row["sling"][1] = ans.Table_sling_grommet[0]['Type']
+                row["sling"][1] = ans.Table_sling_grommet[0]['type']
                 row["sling"][2] = ans.Table_sling_grommet[0]['SWL']
                 row["sling"][3] = ans.Table_sling_grommet[0]['D']
             else:
