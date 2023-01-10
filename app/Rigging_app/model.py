@@ -131,7 +131,8 @@ class communicater_calculations:
         self.Rigging_checks_other= _Calc_rigging.get_rigging_other_equipment
         self.Crane_checks = _Calc_crane.get_crane_results
         self.TEF_angles = _Calc_TEF_factor.get_angles
-        #self.TEF_checks = _Calc_TEF_factor.get_checks
+        self.TEF_factors = _Calc_TEF_factor.get_tef_factors
+        self.TEF_checks = _Calc_TEF_factor.get_TEF_checks
 
     def make_data_skl(self,params):
         Data_SKl ={}
@@ -471,9 +472,12 @@ class communicater_calculations:
         return self.Crane_checks
     
     @ property 
-    def get_angles(self):
+    def get_TEF_angles(self):
         return self.TEF_angles
 
+    @ property 
+    def get_TEF_factors(self):
+        return self.TEF_factors
     @property 
     def get_cog_shift_calc_total(self):
         return self.COG_shift_total
@@ -482,6 +486,9 @@ class communicater_calculations:
     def get_SSF_factors_total(self):
         return self.SSF_factors
 
+    @ property 
+    def get_TEF_checks(self):
+        return self.TEF_checks
 def Make_components(data,params_tab5):
     point_names = ["A","B","C","D"]
     comp = []
@@ -580,7 +587,27 @@ def Make_components(data,params_tab5):
     comp.append(Tag("ans_COG",data_factors["COG_envelope"]))
     comp.append(Tag("COG_shift_rigging",table_cog_shift_factor))
     # Chapter 4.4: tilt factor 
-    # Moet nog gedaan worden 
+    # import data 
+    TEF_angles = data.get_TEF_angles
+    if TEF_angles == "No tilt angles, factor = 1":
+        Show_appendix_B = "No"
+    else: 
+        Show_appendix_B="Yes"
+    TEF_factors = data.get_TEF_factors
+    comp.append(Tag("TILT_angle",TEF_angles))
+    table_TEF_factors = []
+    for i in range(N_lifts):
+        row = {}
+        row["point"] = point_names[i]
+        row["TEF"] = TEF_factors[i]
+        table_TEF_factors.append(row)
+    comp.append(Tag("TEF_factors",table_TEF_factors))
+    comp.append(Tag("Show_appendix_B",Show_appendix_B))
+
+
+
+
+
 
 
     #Chapter 4.5: COG YAW
@@ -626,7 +653,7 @@ def Make_components(data,params_tab5):
             row['SKL_source']="Ref 2.1 16.3"
 
         row["ANS_SLDF"]=factors["SLDF_ans"]
-        row["Ans_TRF"]=factors["TRF"]
+        row["Ans_TRF"]=factors["TRF_ans"]
         row["SKL"]=factors["SKL"][2]
         row["SLDF"]=factors["SLDF"]
         row["TRF"]=factors["TRF"]
@@ -669,7 +696,7 @@ def Make_components(data,params_tab5):
             row["l_SWL_req_shackle"]=round(factors["Connection_lower"][-2],2)
             row["l_UC"]=round(factors["Connection_lower"][-1],2)
         else:
-            row["u_show_UC_shackle"]="no"
+            row["l_show_UC_shackle"]="no"
 
         rigging_checks_factors.append(row)
     comp.append(Tag("paragraphs_rigging",rigging_checks_factors))
@@ -741,7 +768,43 @@ def Make_components(data,params_tab5):
     else:
         comp.append(Tag("check_crane2_show","yes"))
 
-    # Chapter appendix B SKL Factor
+    # Chapter B tilt calculations 
+    # import data
+    TEF_checks = data.get_TEF_checks 
+    print("Dit is tef checks")
+    print(TEF_checks)
+    comp.append(Tag("ANS_envelope_TILT",TEF_checks["ANS_envelope_TILT"]))
+    paragraphs_TEF=[]
+    
+    j=0
+    for points in TEF_checks["Points"]:
+        row={}
+        if len(points)==2:
+            text= "Max tef factor of points:" + points[0]+ " and " + points[1]
+        else:
+            text= "Max tef factor of point:" + points[0]
+        row["text_points"]= text
+        row["COG_x"]=round(TEF_checks["COG_point"][j][0],0)
+        row["COG_y"]=round(TEF_checks["COG_point"][j][1],0)
+
+        row["Pitch"]=TEF_checks["Angles"][j][1]
+        row["Roll"]=TEF_checks["Angles"][j][0]
+        input_table=[]
+        for i in range(N_lifts):
+            row_table_lift_points={}
+            row_table_lift_points["point"]=point_names[i]
+            row_table_lift_points["x"]=round(TEF_checks["Lift_points"][j][i][0],0)
+            row_table_lift_points["y"]=round(TEF_checks["Lift_points"][j][i][0],0)
+            row_table_lift_points["Load_dis"]=round(TEF_checks["Load_dis"][j][i]*100,2)
+            row_table_lift_points["TEF"]=TEF_factors[i]
+            input_table.append(row_table_lift_points)
+        row["INPUT"]=input_table
+        paragraphs_TEF.append(row)
+                    
+        j=j+1
+    comp.append(Tag("paragraphs_TEF_factors",paragraphs_TEF))
+
+    # Chapter appendix C SKL Factor
     # import data
     # Import data from excel sheet 
     Skew_load_file = Path(__file__).parent
@@ -777,7 +840,7 @@ def Make_components(data,params_tab5):
         # Chapter length normal slings 
         # Results normal length sling 
         Results_normal_length=Results_SKL_total[0]
-        print(Results_normal_length)
+        #print(Results_normal_length)
         strain_sling = clean_up_data(Results_normal_length["Strain_slings"])
         for i in range(4):
             comp.append(Tag("L_slings_"+str(i+1),Data_SkL["Lslings"][i]))
@@ -826,11 +889,11 @@ def Make_components(data,params_tab5):
             
             Results_sling = Results_SKL_total[i+1]
             row["Sling"]= "Sling " +str(i+1) 
-            print(Results_sling)
+            #print(Results_sling)
             # Slings
             Short_long_slings = clean_up_data(Results_sling["Short_long_slings"])
             Length_slings = clean_up_data(Results_sling["Length_slings"])
-            print(Length_slings)
+            #print(Length_slings)
             strain_sling = clean_up_data(Results_sling["Strain_slings"])
             for j in range(1,5):
                 if Short_long_slings[j-1] == 0:
