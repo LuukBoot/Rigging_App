@@ -25,9 +25,15 @@ class Parametrization(Parametrization):
     tab_1.section_1.Lift_points_table.x = NumberField("x",suffix = "m")
     tab_1.section_1.Lift_points_table.y = NumberField("y",suffix = "m")
     tab_1.section_1.Lift_points_table.z = NumberField("z",suffix = "m")
+    tab_1.section_1.Lift_points_table.x_deg = NumberField("x",default = 0,suffix = "[deg]")
+    tab_1.section_1.Lift_points_table.y_deg = NumberField("y",default = 0,suffix = "[deg]")
     tab_1.section_1.COG_x = NumberField("COG x",default = 0,suffix = "[m]")
     tab_1.section_1.COG_y = NumberField("COG y",default = 0,suffix = "[m]")
     tab_1.section_1.COG_z = NumberField("COG z",default = 0,suffix = "[m]")
+    tab_1.section_1.COG_z = NumberField("COG z",default = 0,suffix = "[m]")
+    tab_1.section_1.COG_z = NumberField("COG z",default = 0,suffix = "[m]")
+
+    
     # Tab1.section2: Object geometry
     tab_1.section_2 = Section("Object geometry")
     tab_1.section_2.Object_x = NumberField("Object lengte",default = 0,

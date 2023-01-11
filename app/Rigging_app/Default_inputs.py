@@ -91,10 +91,10 @@ for i in  range(1,number_of_row_file):
 # Default tables
 
 list_hoist=["Main hoist","Aux hoist","Whip hoist"]
-Table_Lift_points=[{"point":"A","x":0,"y":0,"z":0},
-                    {"point":"B","x":0,"y":0,"z":0},
-                    {"point":"C","x":0,"y":0,"z":0},
-                    {"point":"D","x":0,"y":0,"z":0} ]
+Table_Lift_points=[{"point":"A","x":0,"y":0,"z":0,"x_deg":0,"y_deg":0},
+                    {"point":"B","x":0,"y":0,"z":0,"x_deg":0,"y_deg":0},
+                    {"point":"C","x":0,"y":0,"z":0,"x_deg":0,"y_deg":0},
+                    {"point":"D","x":0,"y":0,"z":0,"x_deg":0,"y_deg":0} ]
 
 Table_slings_grommets = [{"ID_number":"Type id number",
                           "type":"sling",

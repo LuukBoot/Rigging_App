@@ -14,11 +14,12 @@ from pathlib import Path
 from viktor.external.word import WordFileTag,render_word_file, WordFileImage
 class Main_Controller(ViktorController):
     label = 'Rigging Checks'
-    parametrization = Parametrization
+    parametrization = Parametrization(width=50)
 
     def word_document_download(self,params,**kwargs):
         data = communicater_calculations(params)
         components = Make_components(data,params.tab_5)
+        
         # Getting pathfile of word_document_template
         Word_template_File = Path(__file__).parent
         Word_template_File_path = Word_template_File.parent / "Data_output/Word_template.docx"
@@ -75,7 +76,7 @@ class Main_Controller(ViktorController):
                     [{"type": "table"}]]
             )
         df_table_1= [point_names[:N_lifts],
-                     load_dis_perc,
+                     np.round(load_dis_perc,3),
                      load_dis_t,
                      max_cog_shift]
 

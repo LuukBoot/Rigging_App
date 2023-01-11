@@ -115,7 +115,7 @@ In tab 1 the general information is entered:
 With the help of the method make_data_general the data is stored in the structure, that is shown below:
 
 ```
-Data_general={"Lift_points": [nx[float(point_x),float(point_y),float(point_z)]],
+Data_general={"Lift_points": [nx[float(point_x),float(point_y),float(point_z),float(x_deg),float(y_deg)]],
               "Obj_geo": [float(length),float(width),float(height],
               "COG": [float(COG_x),float(COG_y),float(COG_z],
               "LW": float(weight of liftobject)}

@@ -110,7 +110,8 @@ class communicater_calculations:
             raise UserError("Is the points connected and sling safety factor filled in correctly, at the rigging checks ?")
         except ZeroDivisionError:
             raise UserError("Devided by zero, are all parameters at rigging filled in correctly")
-        
+        except KeyError:
+            raise UserError("Is the points connected and sling safety factor filled in correctly, at the rigging checks ?")
         _Calc_crane = Calc_crane(self.data_cranes,
                                 _Calc_factors,
                                 _Calc_load_dis,
@@ -302,10 +303,12 @@ class communicater_calculations:
         lift_points_table = params.section_1.Lift_points_table
         Data_general["Lift_points"] = []
         for i in range(self.N_lifts):
-            point=[0, 0, 0]
+            point=[0, 0, 0,0,0]
             point[0] = lift_points_table[i]["x"]*1000
             point[1] = lift_points_table[i]["y"]*1000
             point[2] = lift_points_table[i]["z"]*1000
+            point[3] = lift_points_table[i]["x_deg"]
+            point[4] = lift_points_table[i]["y_deg"]
             Data_general["Lift_points"].append(point)
 
         # Storing object geometry
@@ -520,14 +523,19 @@ def Make_components(data,params_tab5):
 
     # Table lift points 
     table_lift_points = []
+    table_load_perc = []
     for i in range(N_lifts):
         table_lift_points.append({"point":point_names[i],
                                     "x":Data_general_lifting["Lift_points"][i][0]/1000,
                                     "y":Data_general_lifting["Lift_points"][i][1]/1000,
                                     "z":Data_general_lifting["Lift_points"][i][2]/1000,
-                                    "perc":round(load_dis_perc[i]*100,2),
-                                    "t":load_dis_t[i]})
+                                    "x_deg":Data_general_lifting["Lift_points"][i][3],
+                                    "y_deg":Data_general_lifting["Lift_points"][i][4]})
+        table_load_perc.append({"point":point_names[i],
+                                "perc":round(load_dis_perc[i]*100,2),
+                                "t":load_dis_t[i]})
     comp.append(Tag("table_lift_points",table_lift_points))
+    comp.append(Tag("table_load_perc",table_load_perc))
     # Table COG 
     comp.append(Tag("COG_x",Data_general_lifting["COG"][0]/1000))
     comp.append(Tag("COG_y",Data_general_lifting["COG"][1]/1000))
@@ -582,7 +590,7 @@ def Make_components(data,params_tab5):
     table_cog_shift_factor=[]
     for i in range(N_lifts):
         table_cog_shift_factor.append({"point":point_names[i],
-                                        "COG_shift":factors["COG_envelope"][i]})
+                                        "COG_shift":round(factors["COG_envelope"][i],2)})
 
     comp.append(Tag("ans_COG",data_factors["COG_envelope"]))
     comp.append(Tag("COG_shift_rigging",table_cog_shift_factor))
@@ -777,32 +785,33 @@ def Make_components(data,params_tab5):
     paragraphs_TEF=[]
     
     j=0
-    for points in TEF_checks["Points"]:
-        row={}
-        if len(points)==2:
-            text= "Max tef factor of points:" + points[0]+ " and " + points[1]
-        else:
-            text= "Max tef factor of point:" + points[0]
-        row["text_points"]= text
-        row["COG_x"]=round(TEF_checks["COG_point"][j][0],0)
-        row["COG_y"]=round(TEF_checks["COG_point"][j][1],0)
+    if Show_appendix_B == "Yes":
+        for points in TEF_checks["Points"]:
+            row={}
+            if len(points)==2:
+                text= "Max tef factor of points:" + points[0]+ " and " + points[1]
+            else:
+                text= "Max tef factor of point:" + points[0]
+            row["text_points"]= text
+            row["COG_x"]=round(TEF_checks["COG_point"][j][0],0)
+            row["COG_y"]=round(TEF_checks["COG_point"][j][1],0)
 
-        row["Pitch"]=TEF_checks["Angles"][j][1]
-        row["Roll"]=TEF_checks["Angles"][j][0]
-        input_table=[]
-        for i in range(N_lifts):
-            row_table_lift_points={}
-            row_table_lift_points["point"]=point_names[i]
-            row_table_lift_points["x"]=round(TEF_checks["Lift_points"][j][i][0],0)
-            row_table_lift_points["y"]=round(TEF_checks["Lift_points"][j][i][0],0)
-            row_table_lift_points["Load_dis"]=round(TEF_checks["Load_dis"][j][i]*100,2)
-            row_table_lift_points["TEF"]=TEF_factors[i]
-            input_table.append(row_table_lift_points)
-        row["INPUT"]=input_table
-        paragraphs_TEF.append(row)
-                    
-        j=j+1
-    comp.append(Tag("paragraphs_TEF_factors",paragraphs_TEF))
+            row["Pitch"]=TEF_checks["Angles"][j][1]
+            row["Roll"]=TEF_checks["Angles"][j][0]
+            input_table=[]
+            for i in range(N_lifts):
+                row_table_lift_points={}
+                row_table_lift_points["point"]=point_names[i]
+                row_table_lift_points["x"]=round(TEF_checks["Lift_points"][j][i][0],0)
+                row_table_lift_points["y"]=round(TEF_checks["Lift_points"][j][i][0],0)
+                row_table_lift_points["Load_dis"]=round(TEF_checks["Load_dis"][j][i]*100,2)
+                row_table_lift_points["TEF"]=TEF_factors[i]
+                input_table.append(row_table_lift_points)
+            row["INPUT"]=input_table
+            paragraphs_TEF.append(row)
+                        
+            j=j+1
+        comp.append(Tag("paragraphs_TEF_factors",paragraphs_TEF))
 
     # Chapter appendix C SKL Factor
     # import data

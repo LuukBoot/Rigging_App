@@ -546,7 +546,7 @@ def Determine_start_hook_point(Lift_points, Hook_point, Length_slings):
 
     # The steps the calculation needs to loop through
     steps_3_slack = 10000  # For calculation with 3 slings slack     
-    steps_2_slack = 1000  # For calculation with 2 slings slack
+    steps_2_slack = 100  # For calculation with 2 slings slack
 
     # Determine z-position hook
     Hook_point = determine_height_hook_start(Length_slings, 
@@ -612,7 +612,7 @@ def Determine_start_hook_point(Lift_points, Hook_point, Length_slings):
         if abs(z_angle_start-min_angle_z_radius_line) > 0.001:
             i = 0
             # Loop 2 slings slack
-            while i < steps_2_slack and N_slings_slack > 1:
+            while (i+1) < steps_2_slack and N_slings_slack > 1:
                 # Determine hook_point with the function
                 Hook_point = nonlinear_equation_solver(Lift_points_tight, 
                                                        Hook_point,
@@ -1746,6 +1746,18 @@ class Calc_load_dis:
         
         # Determine total weight ob lifting object
         self.total_weight= weight
+
+        # Cheching if all heights are on the same level
+        Heights = []
+        for i in range(n):
+            Heights.append(Lift_points[i][2])
+        
+        if Heights.count(Lift_points[0][2]) != n:
+            min_height = min(Heights)
+            Lift_points = self.relocating_corrected_z(Lift_points, 
+                                                      n, 
+                                                      min_height)
+            print("Moet andere lift punten")
         
         # Determine which method of calculating the load dis 
         if n==1:
@@ -1775,6 +1787,18 @@ class Calc_load_dis:
            
             self._COG_shift_factor=COG_shift_factor_four_point(Lift_points,
                                                                COG_env)
+
+    def relocating_corrected_z(self,lift_points,n,min_height):
+        for i in range(n):
+            height_def = lift_points[i][2]-min_height
+            x_dif = math.tan(math.radians(lift_points[i][3]))*height_def
+            y_dif = math.tan(math.radians(lift_points[i][4]))*height_def
+            lift_points[i][0]=lift_points[i][0]-x_dif
+            lift_points[i][1]=lift_points[i][1]-y_dif
+        return lift_points
+            
+
+
 
     @property
     def return_load_dis(self):
