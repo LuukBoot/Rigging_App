@@ -2016,7 +2016,7 @@ class Calc_TEF_factor:
                         checks_TEF[key].append(values[index])
 
             
-            #self.clean_up_data(checks_TEF)
+            self.clean_up_data(checks_TEF)
 
         # making list so that the max value can be determined 
         self.angle_roll=angle_roll
@@ -2190,6 +2190,7 @@ class Calc_TEF_factor:
             self.checks_end_TEF[key]=[ ]
             for index in indexen:
                 self.checks_end_TEF[key].append(values[index])
+
                 
     @property
     def get_TEF_checks(self):
@@ -2198,7 +2199,14 @@ class Calc_TEF_factor:
  
     @ property 
     def get_angles(self):
-        text= "Pitch: " +str(self.angle_pitch) +"deg/ Roll: "+str(self.angle_roll)+"deg"
+        if self.angle_pitch == 0 and self.angle_roll == 0:
+            text = "No tilt angles, factor = 1"
+        elif self.angle_pitch != 0 and self.angle_roll ==0: 
+            text ="Only pitch angle: " + str(self.angle_pitch) +"deg"
+        elif self.angle_roll != 0 and self.angle_pitch ==0:
+            text ="Only roll angle: " + str(self.angle_roll) + "deg"
+        else: 
+            text= "Pitch: " +str(self.angle_pitch) +"deg/ Roll: "+str(self.angle_roll)+"deg"
         return text
     
     @property 

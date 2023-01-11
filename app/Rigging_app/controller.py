@@ -65,7 +65,7 @@ class Main_Controller(ViktorController):
         N_lifts = data.get_n_lifts
         data_factors = data.get_data_factors
         point_names = ["A","B","C","D"]
-        TEF_angles = data.get_angles
+        TEF_angles = data.get_TEF_angles
         # making figure 
         fig = make_subplots(
             rows=3, cols=1,
